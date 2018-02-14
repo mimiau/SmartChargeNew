@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="OSMonaut-1.1-all">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/lib/OSMonaut-1.1-all.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
