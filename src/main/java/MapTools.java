@@ -55,7 +55,7 @@ public class MapTools {
 
         for (int i=0;i<ClientsToCluster.size();i++)
         {
-            clients.println(ClientsToCluster.get(i).getPoint()[0]+","+ClientsToCluster.get(i).getPoint()[1]);
+            clients.println(ClientsToCluster.get(i).getPoint()[0]+";"+ClientsToCluster.get(i).getPoint()[1]);
         }
 
         System.out.println("Wypisałem klientów do klastrowania");
@@ -65,7 +65,7 @@ public class MapTools {
 
         for (int i=0;i<ClusteredClients.size();i++)
         {
-            clients_clustered.println(ClusteredClients.get(i).getCenter().getPoint()[0]+","+ClusteredClients.get(i).getCenter().getPoint()[1]/*+";"+ClusteredClients.get(i).getPoints().size()*/);
+            clients_clustered.println(ClusteredClients.get(i).getCenter().getPoint()[0]+";"+ClusteredClients.get(i).getCenter().getPoint()[1]+";"+ClusteredClients.get(i).getPoints().size());
         }
         System.out.println("Wypisałem klastry klientów");
 
@@ -154,7 +154,7 @@ public class MapTools {
 
         for (int i=0;i<ServersToCluster.size();i++)
         {
-            servers.println(ServersToCluster.get(i).getPoint()[0]+","+ServersToCluster.get(i).getPoint()[1]);
+            servers.println(ServersToCluster.get(i).getPoint()[0]+";"+ServersToCluster.get(i).getPoint()[1]);
         }
 
         System.out.println("Wypisałem serwery do klastrowania");
@@ -164,7 +164,7 @@ public class MapTools {
 
         for (int i=0;i<ClusteredServers.size();i++)
         {
-            servers_clustered.println(ClusteredServers.get(i).getCenter().getPoint()[0]+","+ClusteredServers.get(i).getCenter().getPoint()[1]/*+";"+ClusteredClients.get(i).getPoints().size()*/);
+            servers_clustered.println(ClusteredServers.get(i).getCenter().getPoint()[0]+";"+ClusteredServers.get(i).getCenter().getPoint()[1]/*+";"+ClusteredClients.get(i).getPoints().size()*/);
         }
         System.out.println("Wypisałem klastry serwerów");
 

@@ -49,7 +49,7 @@ public class SmartCharge implements StartPoint {
     }
 
     boolean[] localSolution = new boolean[3700]; //size has to be greater than number of potential stations to accomodate real
-                                                 // world stations that are obligatory solutions
+    // world stations that are obligatory solutions
     float currentBestColumnSum = 1;
     int currentBestCandidateListIndex = 0;
 
