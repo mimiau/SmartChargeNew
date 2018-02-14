@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
@@ -170,19 +171,18 @@ public class SmartCharge implements StartPoint {
         System.out.println("LStation.size() = " + LStation.size() + ", LCluster.size() = " + LCluster.size());
 
         AuxTools.setIntercityStationsActive(LStation);
-        System.out.println("LStation.size() = " + LStation.size() + ", LCluster.size() = " + LCluster.size());
 
         float[][] distancesArray = new float[LCluster.size()][LStation.size()];  //[i][j]
         distancesArray = AuxTools.makeDistanceArray(LCluster, LStation);
 
         int searchRangeStartIndex = AuxTools.findSearchRangeStartIndex(LStation);
         int searchRangeStopIndex = LStation.size()-1;
-        System.out.println("searchRangeStartIndex "+ searchRangeStartIndex);
-        System.out.println("searchRangeStopIndex  " + searchRangeStopIndex);
+        System.out.println("searchRangeStartIndex = "+ searchRangeStartIndex);
+        System.out.println("searchRangeStopIndex = " + searchRangeStopIndex);
 
         AuxTools.initializeLocalSolution(false, localSolution, searchRangeStartIndex, searchRangeStopIndex);
 
-        System.out.println("dist array length : " + distancesArray.length + "  " + distancesArray[0].length);
+        System.out.println("distancesArray lengths: " + distancesArray.length + ",  " + distancesArray[0].length);
 
 
 
@@ -201,41 +201,61 @@ public class SmartCharge implements StartPoint {
 
 
 
-        //TEST -start
-        for (int i = searchRangeStartIndex; i < searchRangeStartIndex+thisManyStations; i++) {
-            localSolution[i] = true;
-        }
 
 
-        int num = 1000;
+
         long startTime;
         long stopTime;
-        long elapsedTimeMath;
-        long elapsedTimeIF;
-        float wynik;
-
-
+        long elapsedTime;
+        System.out.println("TWOJA FUNKCJA - START");
         startTime = System.nanoTime();
-        for (int i = 0; i < num; i++) {
-           wynik = AuxTools.objectiveFunction2(localSolution, distancesArray);
-        }
+
+        //TU WKLEJ FUNKCJĘ - START
+        //initialize(boolean[] localSolution, List<station> LStation, int thisManyStations, int alreadyAddedStations, int searchRangeStartIndex,  int searchRangeStopIndex)
+
+
+
+
+
+        //TU WKLEJ FUNKCJĘ - STOP
+
         stopTime = System.nanoTime();
-        elapsedTimeIF = stopTime - startTime;
-        System.out.println("2   elapsed time: " + elapsedTimeIF + "ns");
-
-
-        startTime = System.nanoTime();
-        for (int i = 0; i < num; i++) {
-            wynik = AuxTools.objectiveFunction3(localSolution, distancesArray);
-        }
-        stopTime = System.nanoTime();
-        elapsedTimeMath = stopTime - startTime;
-        System.out.println("3 elapsed time: " + elapsedTimeMath + "ns");
-
-        //TEST -end
+        System.out.println("TWOJA FUNKCJA - END");
+        elapsedTime = stopTime - startTime;
+        System.out.println("TWOJA FUNKCJA  elapsed time: " + elapsedTime + "ns ( " +elapsedTime/1000000000 +"s )" );
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//        //RANDOM INITIALIZATION (B option)
+//        for (int i = searchRangeStartIndex; i < searchRangeStartIndex+thisManyStations; i++) {
+//            localSolution[i] = true;
+//        }
+
+
+        int[][] sortedDistancesArrayIndexesArray = AuxTools.makeSortedDistanceArrayIndexesArray(distancesArray);
+
+        float objFunctVal = AuxTools.objectiveFunction3(localSolution, distancesArray, sortedDistancesArrayIndexesArray);
+        System.out.println("Objective function value = " + objFunctVal);
 
 
 

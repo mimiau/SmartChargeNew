@@ -5,6 +5,8 @@
  */
 
 import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class AuxTools {
@@ -14,7 +16,7 @@ public class AuxTools {
         return file.exists();
     }
 
-    public static float[][] makeDistanceArray(List<Cluster> LCluster, List<Station> LStation){
+    public static float[][] makeDistanceArray(List<Cluster> LCluster, List<Station> LStation) {
 
         float[][] distancesArray = new float[LCluster.size()][LStation.size()];  //[i][j]
         for (int currentStationIndex = 0; currentStationIndex < LStation.size(); currentStationIndex++) {
@@ -35,7 +37,7 @@ public class AuxTools {
         return distancesArray;
     }
 
-    public static float objectiveFunction(boolean[] solution, float[][] distancesArray, int dropIndex, int addIndex){
+    public static float objectiveFunction(boolean[] solution, float[][] distancesArray, int dropIndex, int addIndex) {
         //to calculate objective function without dropping or adding anything to the solution pass "-1" as dropIndex
         // and addIndex arguments
 
@@ -48,9 +50,9 @@ public class AuxTools {
 
             currentMin = distancesArray[i][0];
             for (int j = 1; j < jays; j++) {
-                if (  (solution[j] == true || j == addIndex) ) {
-                    if (distancesArray[i][j] < currentMin && j != dropIndex ) {
-                       currentMin = distancesArray[i][j];
+                if ((solution[j] == true || j == addIndex)) {
+                    if (distancesArray[i][j] < currentMin && j != dropIndex) {
+                        currentMin = distancesArray[i][j];
                     }
                 }
             }
@@ -60,7 +62,7 @@ public class AuxTools {
         return minSum;
     }
 
-    public static float objectiveFunction2(boolean[] solution, float[][] distancesArray){
+    public static float objectiveFunction2(boolean[] solution, float[][] distancesArray) {
 
         int eyes = distancesArray.length; //number of rows in distancesArray
         int jays = distancesArray[0].length; //number of columns in distancesArray
@@ -72,7 +74,7 @@ public class AuxTools {
             currentMin = Float.MAX_VALUE;
             for (int j = 0; j < jays; j++) {
 
-                if ( solution[j]) {
+                if (solution[j]) {
                     if (distancesArray[i][j] < currentMin) {
                         currentMin = distancesArray[i][j];
                     }
@@ -84,49 +86,66 @@ public class AuxTools {
         return minSum;
     }
 
-    public static float[][] makeSortedDistanceArrayIndexesArray(float[][] distanceArray){
+    public static Integer[] getSortedIndexes(float[] array){
 
-        float[][] sortedDistancesArrayIndexesArray = new float[distanceArray[0].length][distanceArray.length];  //[i][j]
+        final float[] toBeSorted = array;
+        Integer[] sortedIndexes = new Integer[toBeSorted.length];
+        for(int i = 0; i < toBeSorted.length; i++) sortedIndexes[i] = i;
+        Arrays.sort(sortedIndexes, new Comparator<Integer>(){
+            public int compare(Integer o1, Integer o2){
+                return Float.compare(toBeSorted[o1], toBeSorted[o2]);
+            }
+        });
 
-            for (int currentClusterIndex = 0; currentClusterIndex < distanceArray[0].length; currentClusterIndex++) {
+        return sortedIndexes;
 
-//                float currentClusterX = LCluster.get(currentClusterIndex).getX();
-//                float currentClusterY = LCluster.get(currentClusterIndex).getY();
-//                float currentClusterWeight = LCluster.get(currentClusterIndex).getWeight();
-//                distanceArray[currentClusterIndex][currentStationIndex] = currentClusterWeight * (float) Math.sqrt((currentStationX - currentClusterX) * (currentStationX - currentClusterX) + (currentStationY - currentClusterY) * (currentStationY - currentClusterY));
+    }
 
+    public static int[][] makeSortedDistanceArrayIndexesArray(final float[][] distancesArray) {
+
+        int[][] sortedDistancesArrayIndexesArray = new int[distancesArray.length][distancesArray[0].length];  //[i][j]
+        Integer[] tempSorted = new Integer[distancesArray[0].length];
+
+        for (int currentClusterIndex = 0; currentClusterIndex < distancesArray.length; currentClusterIndex++) {
+
+            tempSorted = AuxTools.getSortedIndexes(distancesArray[currentClusterIndex]);
+            for (int i = 0; i < distancesArray[0].length; i++) {
+                sortedDistancesArrayIndexesArray[currentClusterIndex][i] = tempSorted[i];
             }
 
-        return distanceArray;
-}
+        }
 
-    public static float objectiveFunction3(boolean[] solution, float[][] distancesArray){
-        //NOT WORKING -nothing here
+        return sortedDistancesArrayIndexesArray;
+
+    }
+
+    public static float objectiveFunction3(boolean[] solution, float[][] distancesArray, int[][] sortedDistancesArrayIndexesArray) {
 
         int eyes = distancesArray.length; //number of rows in distancesArray
-        int jays = distancesArray[0].length; //number of columns in distancesArray
-        float currentMin;
         float minSum = 0;
 
-        for (int i = 0; i < eyes; i++) {
-            minSum += 1;
+        for (int currentI = 0; currentI < eyes; currentI++) {
+            int iterator = 0;
+            while( solution[ sortedDistancesArrayIndexesArray[currentI][iterator] ] == false) iterator++;
+            minSum += distancesArray[currentI][ sortedDistancesArrayIndexesArray[currentI][iterator] ];
         }
+
         return minSum;
     }
 
-    public static void initializeLocalSolution(boolean initializeWithThis, boolean[] localSolution, int searchRangeStartIndex, int searchRangeStopIndex){
+    public static void initializeLocalSolution(boolean initializeWithThis, boolean[] localSolution, int searchRangeStartIndex, int searchRangeStopIndex) {
 
         for (int i = 0; i < searchRangeStartIndex; i++) {
             localSolution[i] = true;
         }
 
-        for (int i = searchRangeStartIndex; i <= searchRangeStopIndex ; i++) {
+        for (int i = searchRangeStartIndex; i <= searchRangeStopIndex; i++) {
             localSolution[i] = initializeWithThis;
         }
 
     }
 
-    public static int findSearchRangeStartIndex(List<Station> LStation){
+    public static int findSearchRangeStartIndex(List<Station> LStation) {
         int searchRangeStartIndex = 0;
 
         while (LStation.get(searchRangeStartIndex).isActive()) {
@@ -136,7 +155,7 @@ public class AuxTools {
         return searchRangeStartIndex;
     }
 
-    public static void setIntercityStationsActive (List<Station> LStation){
+    public static void setIntercityStationsActive(List<Station> LStation) {
         // The aim of this function is to locate stations on the city outskirts in order to minimize the distance
         // between closest stations of every city pair. It is done intelligently though. We set the absolute needed
         // minimum.
@@ -175,8 +194,8 @@ public class AuxTools {
         float distance = 0;
         for (int i = 0; i < cityX.length; i++) {
 
-            distance = (float) Math.sqrt((MyX - cityX[i])*(MyX - cityX[i]) + (MyY - cityY[i])*(MyY - cityY[i]));
-            if(distance < smallestDistance){
+            distance = (float) Math.sqrt((MyX - cityX[i]) * (MyX - cityX[i]) + (MyY - cityY[i]) * (MyY - cityY[i]));
+            if (distance < smallestDistance) {
                 smallestDistance = distance;
                 myCityIndex = i;
             }
@@ -195,7 +214,7 @@ public class AuxTools {
             smallestDistance = Float.MAX_VALUE;
             distance = 0;
 
-            if(i != myCityIndex) {
+            if (i != myCityIndex) {
                 for (int j = 0; j < LStation.size(); j++) {
 
                     float currentStationX = LStation.get(j).getX();
@@ -221,16 +240,15 @@ public class AuxTools {
                         float alreadyAddedStationY = LStation.get(j).getY();
                         float bestStationX = LStation.get(bestStationIndex).getX();
                         float bestStationY = LStation.get(bestStationIndex).getY();
-                        float distance1 = (float) Math.sqrt((alreadyAddedStationX - bestStationX)*(degToKmConstantX) * (alreadyAddedStationX - bestStationX)*(degToKmConstantX) + (alreadyAddedStationY - bestStationY)*(degToKmConstantY) * (alreadyAddedStationY - bestStationY)*(degToKmConstantY));
+                        float distance1 = (float) Math.sqrt((alreadyAddedStationX - bestStationX) * (degToKmConstantX) * (alreadyAddedStationX - bestStationX) * (degToKmConstantX) + (alreadyAddedStationY - bestStationY) * (degToKmConstantY) * (alreadyAddedStationY - bestStationY) * (degToKmConstantY));
 
-                        if(distance1 < closestToTheBestStationDistance){
+                        if (distance1 < closestToTheBestStationDistance) {
                             closestToTheBestStationDistance = distance1;
                         }
                     }
 
 
-
-                    if (closestToTheBestStationDistance > 1 ) { //1km - minimum distance between stations
+                    if (closestToTheBestStationDistance > 1) { //1km - minimum distance between stations
 
                         Station tempStationContainer = LStation.get(bestStationIndex);
                         LStation.remove(bestStationIndex);
@@ -243,8 +261,6 @@ public class AuxTools {
                     }
 
 
-
-
                 }
             }
 
@@ -253,14 +269,6 @@ public class AuxTools {
         System.out.println("Activated " + newStationsCounter + " new inter-city stations");
 
     }
-
-
-
-
-
-
-
-
 
 
 }//end of class
