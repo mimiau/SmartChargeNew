@@ -12,13 +12,12 @@ import org.pcj.*;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
-@RegisterStorage(SmartCharge.Shared.class)
-public class SmartCharge implements StartPoint {
+@RegisterStorage(SmartChargeBackup.Shared.class)
+public class SmartChargeBackup implements StartPoint {
 
     public void groupPCJbarrier(int firstGroupMember, int numberOfThreadsInGroup) {
 
@@ -38,7 +37,7 @@ public class SmartCharge implements StartPoint {
         }
     }
 
-    @Storage(SmartCharge.class)
+    @Storage(SmartChargeBackup.class)
     enum Shared {
         localSolution,
         currentBestColumnSum,
@@ -61,7 +60,7 @@ public class SmartCharge implements StartPoint {
             nd = new NodesDescription(nodes);
         }
 
-        PCJ.deploy(SmartCharge.class, nd);
+        PCJ.deploy(SmartChargeBackup.class, nd);
     }
 
     @Override
@@ -80,9 +79,9 @@ public class SmartCharge implements StartPoint {
         //temp initialization.
         thisManyStations = 1000;
 
-        if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_servers.txt")) {  // hpc run case
+        if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt")) {  // hpc run case
             Scanner sc = null;
-            sc = new Scanner(new File("/Users/Mateusz/Desktop/warszawa_servers.txt"));
+            sc = new Scanner(new File("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt"));
 
             int counter = 0;
             String line;
@@ -214,6 +213,10 @@ public class SmartCharge implements StartPoint {
         //initialize(boolean[] localSolution, List<station> LStation, int thisManyStations, int alreadyAddedStations, int searchRangeStartIndex,  int searchRangeStopIndex)
 
 
+        for (int i = searchRangeStartIndex+200; i < searchRangeStartIndex+thisManyStations-200; i++) {
+            localSolution[i] = true;
+        }
+
 
         //MICHAŁ TU WKLEJ FUNKCJĘ - STOP
 
@@ -223,9 +226,6 @@ public class SmartCharge implements StartPoint {
         System.out.println("TWOJA FUNKCJA  elapsed time: " + elapsedTime + "ns ( " +elapsedTime/1000000000 +"s )" );
 
 
-//        for (int i = searchRangeStartIndex+200; i < searchRangeStartIndex+thisManyStations-200; i++) {
-//            localSolution[i] = true;
-//        }
 
 
 
@@ -244,16 +244,6 @@ public class SmartCharge implements StartPoint {
         float objFunctVal = AuxTools.objectiveFunction3(localSolution, distancesArray, sortedDistancesArrayIndexesArray);
         System.out.println("Objective function value = " + objFunctVal);
         //OBJ FUNCT TEMP
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -407,6 +397,14 @@ public class SmartCharge implements StartPoint {
             }
         }
         //REDUCED LOCAL SEARCH (RLS1) - part of VARIABLE NEIGHBORHOOD SEARCH (VNS) - END
+
+
+
+
+
+
+
+
 
 
 
