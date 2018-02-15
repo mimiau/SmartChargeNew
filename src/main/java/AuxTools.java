@@ -18,6 +18,9 @@ public class AuxTools {
 
     public static float[][] makeDistanceArray(List<Cluster> LCluster, List<Station> LStation) {
 
+        int degToKmConstantX = 111;
+        int degToKmConstantY = 65; //circa for the middle of Poland
+
         float[][] distancesArray = new float[LCluster.size()][LStation.size()];  //[i][j]
         for (int currentStationIndex = 0; currentStationIndex < LStation.size(); currentStationIndex++) {
 
@@ -29,7 +32,7 @@ public class AuxTools {
                 float currentClusterX = LCluster.get(currentClusterIndex).getX();
                 float currentClusterY = LCluster.get(currentClusterIndex).getY();
                 float currentClusterWeight = LCluster.get(currentClusterIndex).getWeight();
-                distancesArray[currentClusterIndex][currentStationIndex] = currentClusterWeight * (float) Math.sqrt((currentStationX - currentClusterX) * (currentStationX - currentClusterX) + (currentStationY - currentClusterY) * (currentStationY - currentClusterY));
+                distancesArray[currentClusterIndex][currentStationIndex] = currentClusterWeight * (float) Math.sqrt((currentStationX - currentClusterX)*(degToKmConstantX) * (currentStationX - currentClusterX)*(degToKmConstantX) + (currentStationY - currentClusterY)*(degToKmConstantY) * (currentStationY - currentClusterY)*(degToKmConstantY));
 
             }
         }
@@ -155,7 +158,9 @@ public class AuxTools {
         return searchRangeStartIndex;
     }
 
-    public static void setIntercityStationsActive(List<Station> LStation) {
+    public static int setIntercityStationsActive(List<Station> LStation) {
+        //RETURNS NUMBER OF ADDED STATIONS!!!!
+
         // The aim of this function is to locate stations on the city outskirts in order to minimize the distance
         // between closest stations of every city pair. It is done intelligently though. We set the absolute needed
         // minimum.
@@ -184,6 +189,9 @@ public class AuxTools {
                 (float) 18.618612, (float) 16.2825424, (float) 21.0067265, (float) 17.0326689, (float) 15.5049951
         };
 
+        int degToKmConstantX = 111;
+        int degToKmConstantY = 65; //circa for the middle of Poland
+
         // My random cooridnates:
         float MyX = LStation.get(0).getX();
         float MyY = LStation.get(0).getY();
@@ -194,7 +202,7 @@ public class AuxTools {
         float distance = 0;
         for (int i = 0; i < cityX.length; i++) {
 
-            distance = (float) Math.sqrt((MyX - cityX[i]) * (MyX - cityX[i]) + (MyY - cityY[i]) * (MyY - cityY[i]));
+            distance = (float) Math.sqrt((MyX - cityX[i])* (degToKmConstantX) * (MyX - cityX[i])* (degToKmConstantX) + (MyY - cityY[i])* (degToKmConstantY) * (MyY - cityY[i]))* (degToKmConstantY);
             if (distance < smallestDistance) {
                 smallestDistance = distance;
                 myCityIndex = i;
@@ -233,8 +241,6 @@ public class AuxTools {
 
                     float closestToTheBestStationDistance = Float.MAX_VALUE;
 
-                    int degToKmConstantX = 111;
-                    int degToKmConstantY = 65; //circa for the middle of Poland
                     for (int j = 0; j < newStationsCounter; j++) {
                         float alreadyAddedStationX = LStation.get(j).getX();
                         float alreadyAddedStationY = LStation.get(j).getY();
@@ -267,7 +273,7 @@ public class AuxTools {
         }
 
         System.out.println("Activated " + newStationsCounter + " new inter-city stations");
-
+        return newStationsCounter;
     }
 
 

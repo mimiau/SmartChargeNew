@@ -80,9 +80,9 @@ public class SmartCharge implements StartPoint {
         //temp initialization.
         thisManyStations = 1000;
 
-        if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_servers.txt")) {  // hpc run case
+        if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt")) {  // hpc run case
             Scanner sc = null;
-            sc = new Scanner(new File("/Users/Mateusz/Desktop/warszawa_servers.txt"));
+            sc = new Scanner(new File("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt"));
 
             int counter = 0;
             String line;
@@ -168,7 +168,8 @@ public class SmartCharge implements StartPoint {
         System.out.println("alpha = " + alpha + ", MyThreadsNum = " + MyThreadsNum);
         System.out.println("LStation.size() = " + LStation.size() + ", LCluster.size() = " + LCluster.size());
 
-        AuxTools.setIntercityStationsActive(LStation);
+        int alreadyAddedStations; //number of added stations with below statement
+        alreadyAddedStations =  AuxTools.setIntercityStationsActive(LStation);
 
         float[][] distancesArray = new float[LCluster.size()][LStation.size()];  //[i][j]
         distancesArray = AuxTools.makeDistanceArray(LCluster, LStation);
@@ -213,7 +214,7 @@ public class SmartCharge implements StartPoint {
         //MICHAŁ TU WKLEJ FUNKCJĘ - START
         //initialize(boolean[] localSolution, List<station> LStation, int thisManyStations, int alreadyAddedStations, int searchRangeStartIndex,  int searchRangeStopIndex)
 
-
+        ListMapTools.initializeByClustering(localSolution, LStation, thisManyStations, alreadyAddedStations, searchRangeStartIndex, searchRangeStopIndex);
 
         //MICHAŁ TU WKLEJ FUNKCJĘ - STOP
 
@@ -289,15 +290,15 @@ public class SmartCharge implements StartPoint {
         System.out.println("LS-START ");
 
         //ls1:
-        boolean improve = true; // substituted with 2 statements below (both)
-        float improveValue = Float.MAX_VALUE;
-        float startingValue = AuxTools.objectiveFunction3(tempLocalSolution, distancesArray, sortedDistancesArrayIndexesArray);
+        boolean improve = true; // used alternatively with 2 statements below (both); used with while(true) at ls2
+        float improveValue = Float.MAX_VALUE; //used with while("relative improvement") at ls2
+        float startingValue = AuxTools.objectiveFunction3(tempLocalSolution, distancesArray, sortedDistancesArrayIndexesArray);//used with while("relative improvement") at ls2
 
         System.out.println("While(improve)-START");
         //ls2:
         int improveWhileCounter = 0;
-        //while (improve) { //instead (see below) we consider the improvement value relative to the value at the beginning
-        while (improveValue/startingValue > 0.0001) { //0.0001
+        while (improve) { //instead (see below) we consider the improvement value relative to the value at the beginning
+        //while (improveValue/startingValue > 0.0001) { //0.0001
             improveWhileCounter ++;
             System.out.println("While(improve) " + improveWhileCounter);
 
