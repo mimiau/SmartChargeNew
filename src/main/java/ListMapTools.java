@@ -181,7 +181,7 @@ public class ListMapTools {
     return Stations;
     }
 
-    public static void Initialize(boolean localSolution,List<Station> LStation, int thisManyStations,int alreadyAddedStations,
+    public static void Initialize(boolean[] localSolution,List<Station> LStation, int thisManyStations,int alreadyAddedStations,
     int searchRangeStartIndex,int searchRangeStopIndex)
     {
         /*boolean[] localSolution_initialize(List<Station> LStation,
@@ -231,10 +231,27 @@ public class ListMapTools {
 
 
             }
-            ClusteredServers.get(i).getCenter().getPoint()[0]=1;
-            ClusteredServers.get(i).getCenter().getPoint()[1]=1;
+            ClusteredServers.get(i).getCenter().getPoint()[0]=temp.get(temp_min_index).getPoint()[0];
+            ClusteredServers.get(i).getCenter().getPoint()[1]=temp.get(temp_min_index).getPoint()[1];
         }
 
+        for (int k=0;k<ClusteredServers.size();k++)
+        {
+            System.out.println(ClusteredServers.get(k).getCenter().getPoint()[0]+","+ClusteredServers.get(k).getCenter().getPoint()[1]);
+        }
 
+        for (int i=0;i<ClusteredServers.size();i++)
+        {
+            for (int j=0;j<ServerCoords.size();j++)
+            {
+                if (ClusteredServers.get(i).getCenter().getPoint()[0]
+                        ==ServerCoords.get(j)[0] &&
+                        ClusteredServers.get(i).getCenter().getPoint()[1]
+                                ==ServerCoords.get(j)[1])
+                {
+                    localSolution[searchRangeStartIndex+j]=true;
+                }
+            }
+        }
     }
 }

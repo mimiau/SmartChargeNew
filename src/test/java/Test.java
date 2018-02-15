@@ -5,11 +5,12 @@ import java.util.List;
 
 public class Test {
     public static void main(String[] args) throws IOException {
+        boolean z[] = new boolean[3700];
 
         ListMapTools lister = new ListMapTools();
         /*FileMapTools finder = new FileMapTools();
-        finder.FindClients("rzeszow");
-        finder.FindServers("rzeszow",100);*/
+        finder.FindClients("warszawa");
+        finder.FindServers("warszawa",100);*/
         List<Station> a = new ArrayList<Station>();
         int count=0;
         a = lister.FindServers("warszawa");
@@ -24,6 +25,7 @@ public class Test {
             }
         }
         System.out.println(count);
+        lister.Initialize(z,a,1000,13,30,a.size()-1);
     }
 
 
