@@ -25,7 +25,7 @@ public class Test {
             }
         }
         System.out.println(count);
-        lister.Initialize(z,a,1000,13,30,a.size()-1);
+        lister.initializeByClustering(z,a,1000,13,30,a.size()-1);
     }
 
 

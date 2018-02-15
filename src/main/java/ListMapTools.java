@@ -181,8 +181,8 @@ public class ListMapTools {
     return Stations;
     }
 
-    public static void Initialize(boolean[] localSolution,List<Station> LStation, int thisManyStations,int alreadyAddedStations,
-    int searchRangeStartIndex,int searchRangeStopIndex)
+    public static void initializeByClustering(boolean[] localSolution, List<Station> LStation, int thisManyStations, int alreadyAddedStations,
+                                              int searchRangeStartIndex, int searchRangeStopIndex)
     {
         /*boolean[] localSolution_initialize(List<Station> LStation,
         int thisManyStations, int alreadyAddedStations, int searchRangeStartIndex,
