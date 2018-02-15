@@ -13,7 +13,7 @@ import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 
 public class FileMapTools {
 
-    public static void FindClients(String CityName) throws FileNotFoundException, UnsupportedEncodingException {
+    public static void FindClients(String CityName, int ClusteringRatio) throws FileNotFoundException, UnsupportedEncodingException {
 
         EntityFilter filter = new EntityFilter(true, true, false);
         String path ="resources/data/";
@@ -60,7 +60,7 @@ public class FileMapTools {
 
         System.out.println("Wypisałem klientów do klastrowania");
 
-        KMeansPlusPlusClusterer ClientsClusterer = new KMeansPlusPlusClusterer(ClientsToCluster.size()/40,-1);
+        KMeansPlusPlusClusterer ClientsClusterer = new KMeansPlusPlusClusterer(ClientsToCluster.size()/ClusteringRatio,10000);
         ClusteredClients = ClientsClusterer.cluster(ClientsToCluster);
 
         for (int i=0;i<ClusteredClients.size();i++)

@@ -18,7 +18,7 @@ import java.util.List;
 
 public class ListMapTools {
 
-    public static List<Cluster> FindClients(String CityName)  {
+    public static List<Cluster> FindClients(String CityName, int ClusteringRatio)  {
 
         EntityFilter filter = new EntityFilter(true, true, false);
         String path ="resources/data/";
@@ -58,7 +58,7 @@ public class ListMapTools {
             }
         });
 
-        KMeansPlusPlusClusterer ClientsClusterer = new KMeansPlusPlusClusterer(ClientsToCluster.size()/40,-1);
+        KMeansPlusPlusClusterer ClientsClusterer = new KMeansPlusPlusClusterer(ClientsToCluster.size()/ClusteringRatio,-1);
         ClusteredClients = ClientsClusterer.cluster(ClientsToCluster);
         for (int i=0;i<ClusteredClients.size();i++)
         {
@@ -235,10 +235,10 @@ public class ListMapTools {
             ClusteredServers.get(i).getCenter().getPoint()[1]=temp.get(temp_min_index).getPoint()[1];
         }
 
-        for (int k=0;k<ClusteredServers.size();k++)
+      /*  for (int k=0;k<ClusteredServers.size();k++)
         {
             System.out.println(ClusteredServers.get(k).getCenter().getPoint()[0]+","+ClusteredServers.get(k).getCenter().getPoint()[1]);
-        }
+        }*/
 
         for (int i=0;i<ClusteredServers.size();i++)
         {
