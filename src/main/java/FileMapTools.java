@@ -11,7 +11,7 @@ import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.DoublePoint;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 
-public class MapTools {
+public class FileMapTools {
 
     public static void FindClients(String CityName) throws FileNotFoundException, UnsupportedEncodingException {
 
