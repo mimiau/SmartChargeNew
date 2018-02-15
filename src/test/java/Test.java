@@ -7,11 +7,11 @@ public class Test {
     public static void main(String[] args) throws IOException {
         boolean z[] = new boolean[3700];
 
-        ListMapTools lister = new ListMapTools();
-        /*FileMapTools finder = new FileMapTools();
-        finder.FindClients("warszawa");
-        finder.FindServers("warszawa",100);*/
-        List<Station> a = new ArrayList<Station>();
+        //ListMapTools lister = new ListMapTools();
+        FileMapTools finder = new FileMapTools();
+        finder.FindClients("warszawa",10);
+        finder.FindServers("warszawa",929);
+       /* List<Station> a = new ArrayList<Station>();
         int count=0;
         a = lister.FindServers("warszawa");
 
@@ -25,7 +25,7 @@ public class Test {
             }
         }
         System.out.println(count);
-        lister.initializeByClustering(z,a,1000,13,30,a.size()-1);
+        lister.initializeByClustering(z,a,1000,13,30,a.size()-1);*/
     }
 
 
