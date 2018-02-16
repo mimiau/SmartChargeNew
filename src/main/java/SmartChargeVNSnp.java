@@ -79,9 +79,9 @@ public class SmartChargeVNSnp implements StartPoint {
         //temp initialization.
         thisManyStations = 600;
 
-        if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt")) {  // hpc run case
+        if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_servers.txt")) {  // hpc run case
             Scanner sc = null;
-            sc = new Scanner(new File("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt"));
+            sc = new Scanner(new File("/Users/Mateusz/Desktop/warszawa_servers.txt"));
 
             int counter = 0;
             String line;
