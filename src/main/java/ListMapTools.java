@@ -54,7 +54,7 @@ public class ListMapTools {
             }
         });
 
-        KMeansPlusPlusClusterer ClientsClusterer = new KMeansPlusPlusClusterer(ClientsToCluster.size()/ClusteringRatio,-1);
+        KMeansPlusPlusClusterer ClientsClusterer = new KMeansPlusPlusClusterer((int) (ClientsToCluster.size()/ClusteringRatio),-1);
         ClusteredClients = ClientsClusterer.cluster(ClientsToCluster);
         for (int i=0;i<ClusteredClients.size();i++)
         {
