@@ -187,22 +187,22 @@ public class SmartChargeVNSparallel implements StartPoint {
         int thisManyStations = -1;
 
         int num = 29; //int num = 0;
-        //while (num < 30) {
+//        //while (num < 30) {
+//
+//            for (int i = 0; i < cityProblemSizeOverwrite.size(); i++) {
+//                for (int j = 0; j < cityProblemSizeOverwrite.get(i); j++) {
+//                    //System.out.println(names[i]);
+//                    if (PCJ.myId() == num) {
+//                        cityGroup = PCJ.join(cityName.get(i));
+//                        thisManyStations = cityProblemSize.get(i);
+//                    }
+//                    num++;
+//                }
+//            }
+//        //}
 
-            for (int i = 0; i < cityProblemSizeOverwrite.size(); i++) {
-                for (int j = 0; j < cityProblemSizeOverwrite.get(i); j++) {
-                    //System.out.println(names[i]);
-                    if (PCJ.myId() == num) {
-                        cityGroup = PCJ.join(cityName.get(i));
-                        thisManyStations = cityProblemSize.get(i);
-                    }
-                    num++;
-                }
-            }
-        //}
-
-//        thisManyStations = 3000;
-//        cityGroup = PCJ.join("polska");
+       thisManyStations = 929;
+       cityGroup = PCJ.join("warszawa");
 
 
         System.out.println( PCJ.myId() + "  " + cityGroup.myId()  );
