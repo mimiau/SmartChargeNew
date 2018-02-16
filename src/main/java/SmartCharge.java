@@ -66,102 +66,20 @@ public class SmartCharge implements StartPoint {
 
     @Override
     public void main() throws Throwable {
-
         System.out.println("Hello from: " + PCJ.myId() + " of " + PCJ.threadCount());
-
-
-        // entry data for constructive solution search
-        List<Cluster> LCluster = new ArrayList<>(); //Arraylist is created by copying linkedlist to preinit. Arraylist
-        List<Station> LStation = new ArrayList<>();
-        int thisManyStations; // number of stations to be allocated in a given station list
+        int thisManyStations = 1000; // number of stations to be allocated in a given station list
         int alpha = 0; //temporarily we use all threads. Later only some portion will be assigned
         int MyThreadsNum = PCJ.threadCount(); //number of threads assigned counted from alpha
 
-        //temp initialization.
-        thisManyStations = 600;
+        //LOADING MAP DATA (CLIENTS/STATIONS)
+        ListMapTools dataLoader = new ListMapTools();
 
-        if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt")) {  // hpc run case
-            Scanner sc = null;
-            sc = new Scanner(new File("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt"));
+        //NOTE TO SELF: don't be bothered by "E: Node for way not found". It's normal. It also takes considerable amount of time
+        List<Cluster> LCluster = new ArrayList<>();
+        LCluster = dataLoader.FindClients("warszawa",10); //divides number of stations clustering ratio
+        List<Station> LStation = new ArrayList<>();
+        LStation = dataLoader.FindServers("warszawa");
 
-            int counter = 0;
-            String line;
-            while(sc.hasNext()){
-                if (sc.hasNextLine()) {
-                    line = sc.nextLine();
-
-                    Station A = new Station();
-
-                    A.setX(Float.parseFloat(line.split(";")[0]));
-                    //System.out.println(line.split(";")[0]);
-                    A.setY(Float.parseFloat(line.split(";")[1]));
-                    //System.out.println(line.split(";")[1]);
-                    switch( Integer.parseInt(line.split(";")[2]) ){
-                        case 1: A.setActive(true);
-                            break;
-                        case 0: A.setActive(false);
-                            break;
-                    }
-                    A.setId(Integer.parseInt(line.split(";")[3]));
-                    //System.out.println(line.split(";")[3]);
-
-                    LStation.add(A);
-                }
-                else{ sc.next(); }
-            }
-            System.out.println("Loaded LStations from FILE");
-
-
-        } else {
-
-            for (int i = 0; i < 1000; i++) { // 3000
-                Station A = new Station();
-                A.setX((float) i / 10000);
-                A.setY((float) i / 10000);
-                LStation.add(A);
-            }
-            System.out.println("Loaded LStations from GENERATOR");
-        }
-
-        if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_clients_clustered.txt")) {  // hpc run case
-            Scanner sc = null;
-            sc = new Scanner(new File("/Users/Mateusz/Desktop/warszawa_clients_clustered.txt"));
-
-            int counter = 0;
-            String line;
-            while(sc.hasNext()){
-                if (sc.hasNextLine()) {
-                    line = sc.nextLine();
-
-                    Cluster A = new Cluster();
-
-                    A.setX(Float.parseFloat(line.split(";")[0]));
-                    //System.out.println(line.split(";")[0]);
-                    A.setY(Float.parseFloat(line.split(";")[1]));
-                    //System.out.println(line.split(";")[1]);
-                    A.setWeight(Float.parseFloat(line.split(";")[2]));
-                    //System.out.println(line.split(";")[2]);
-
-                    LCluster.add(A);
-                }
-                else{ sc.next(); }
-            }
-            System.out.println("Loaded LClusters from FILE");
-
-
-        } else {
-            for (int i = 0; i < 1; i++) { // up to 60000
-                Cluster B = new Cluster();
-                B.setX((float) 50.057); //i/10000);
-                B.setY((float) 21.7183);//i/10000);
-                B.setWeight(ThreadLocalRandom.current().nextInt(1, 10 + 1));
-                LCluster.add(B);
-            }
-            System.out.println("Loaded LClusters from GENERATOR");
-        }
-
-
-        PCJ.barrier();
         //end temp initialization------------------------------------------------------------------------------------
 
 
@@ -171,10 +89,12 @@ public class SmartCharge implements StartPoint {
         int alreadyAddedStations; //number of added stations with below statement
         alreadyAddedStations =  AuxTools.setIntercityStationsActive(LStation);
 
-        //Initial Stations clustering function here
+        LStation = ListMapTools.ServerCandidatesClustering (LStation, thisManyStations, alreadyAddedStations, 1.5); //number of stations in the output = multiplier * thisManyStations
 
         float[][] distancesArray = new float[LCluster.size()][LStation.size()];  //[i][j]
         distancesArray = AuxTools.makeDistanceArray(LCluster, LStation);
+        System.out.println("distancesArray lengths: " + distancesArray.length + ",  " + distancesArray[0].length);
+
         int[][] sortedDistancesArrayIndexesArray = new int[distancesArray.length][distancesArray[0].length];
         sortedDistancesArrayIndexesArray = AuxTools.makeSortedDistanceArrayIndexesArray(distancesArray);
 
@@ -182,71 +102,15 @@ public class SmartCharge implements StartPoint {
         int searchRangeStopIndex = LStation.size()-1;
         System.out.println("searchRangeStartIndex = "+ searchRangeStartIndex);
         System.out.println("searchRangeStopIndex = " + searchRangeStopIndex);
-
         AuxTools.initializeLocalSolution(false, localSolution, searchRangeStartIndex, searchRangeStopIndex);
 
-        System.out.println("distancesArray lengths: " + distancesArray.length + ",  " + distancesArray[0].length);
+        dataLoader.initializeByClustering(localSolution, LStation, thisManyStations, alreadyAddedStations, searchRangeStartIndex, searchRangeStopIndex);
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        long startTime;
-        long stopTime;
-        long elapsedTime;
-        System.out.println("TWOJA FUNKCJA - START");
-        startTime = System.nanoTime();
-
-        //MICHAŁ TU WKLEJ FUNKCJĘ - START
-        //initialize(boolean[] localSolution, List<station> LStation, int thisManyStations, int alreadyAddedStations, int searchRangeStartIndex,  int searchRangeStopIndex)
-
-        ListMapTools.initializeByClustering(localSolution, LStation, thisManyStations, alreadyAddedStations, searchRangeStartIndex, searchRangeStopIndex);
-
-        //MICHAŁ TU WKLEJ FUNKCJĘ - STOP
-
-        stopTime = System.nanoTime();
-        System.out.println("TWOJA FUNKCJA - END");
-        elapsedTime = stopTime - startTime;
-        System.out.println("TWOJA FUNKCJA  elapsed time: " + elapsedTime + "ns ( " +elapsedTime/1000000000 +"s )" );
-
-
-//        for (int i = searchRangeStartIndex+200; i < searchRangeStartIndex+thisManyStations-200; i++) {
-//            localSolution[i] = true;
-//        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        //OBJ FUNCT TEMP
+        //OBJ FUNCTION CALCULATION TEMP - START
         float objFunctVal = AuxTools.objectiveFunction3(localSolution, distancesArray, sortedDistancesArrayIndexesArray);
         System.out.println("Objective function value = " + objFunctVal);
-        //OBJ FUNCT TEMP
+        //OBJ FUNCTION CALCULATION TEMP - END
 
 
 
@@ -289,7 +153,7 @@ public class SmartCharge implements StartPoint {
         int counterSHAKE = 0;
         int counterLS = 0;
 
-        startTime = System.nanoTime();
+        long startTime = System.nanoTime();
         while( (System.nanoTime()-startTime)/1000000000 < 10*60 ){//while(t <tMax); "time in minutes"*60
             counterWhileTime++;
             System.out.println("             WhileTIME " + counterWhileTime);
