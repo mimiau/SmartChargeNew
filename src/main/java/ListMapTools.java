@@ -11,6 +11,7 @@ import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 import org.apache.commons.math3.ml.distance.DistanceMeasure;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class ListMapTools {
 
@@ -190,7 +191,7 @@ public class ListMapTools {
     return Stations;
     }
 
-    public static List<Station> ServerCandidatesClustering(List<Station> LStation, int thisManyStations, int alreadyAddedStations,double multipler)
+    public static List<Station> ServerCandidatesClustering(List<Station> LStation, int thisManyStations, int alreadyAddedStations,double multiplier)
     {
         final ArrayList<double[]> ServerCoords = new ArrayList<double[]>();
         final List<DoublePoint> ServersToCluster = new ArrayList<>();
@@ -212,7 +213,7 @@ public class ListMapTools {
             }
         }
 
-            KMeansPlusPlusClusterer ServerClusterer = new KMeansPlusPlusClusterer((int)((thisManyStations-alreadyAddedStations)*multipler),-1);
+            KMeansPlusPlusClusterer ServerClusterer = new KMeansPlusPlusClusterer((int)((thisManyStations-alreadyAddedStations)*multiplier),-1);
             ClusteredServers = ServerClusterer.cluster(ServersToCluster);
             DistanceMeasure distancer = new DistanceMeasure() {
                 @Override
@@ -265,10 +266,6 @@ public class ListMapTools {
     public static void initializeByClustering(boolean[] localSolution, List<Station> LStation, int thisManyStations, int alreadyAddedStations,
                                               int searchRangeStartIndex, int searchRangeStopIndex)
     {
-        /*boolean[] localSolution_initialize(List<Station> LStation,
-        int thisManyStations, int alreadyAddedStations, int searchRangeStartIndex,
-        int searchRangeStopIndex)*/
-
         final ArrayList<double[]> ServerCoords = new ArrayList<double[]>();
         final List<DoublePoint> ServersToCluster = new ArrayList<>();
         List<CentroidCluster> ClusteredServers;
@@ -316,11 +313,6 @@ public class ListMapTools {
             ClusteredServers.get(i).getCenter().getPoint()[1]=temp.get(temp_min_index).getPoint()[1];
         }
 
-      /*  for (int k=0;k<ClusteredServers.size();k++)
-        {
-            System.out.println(ClusteredServers.get(k).getCenter().getPoint()[0]+","+ClusteredServers.get(k).getCenter().getPoint()[1]);
-        }*/
-
         for (int i=0;i<ClusteredServers.size();i++)
         {
             for (int j=0;j<ServerCoords.size();j++)
@@ -334,5 +326,172 @@ public class ListMapTools {
                 }
             }
         }
+    }
+
+
+    public static void groupStations(boolean[] localSolution, List<Station> LStation, int[] groupedStations,
+                                    int searchRangeStartIndex)
+    {
+        final ArrayList<double[]> ServerCoords = new ArrayList<double[]>();
+        final List<DoublePoint> ServersToCluster = new ArrayList<>();
+        List<CentroidCluster> ClusteredServers;
+        DoublePoint point;
+        double distance;
+        double[] first = new double[2];
+        double[] second = new double[2];
+        DistanceMeasure distancer = new DistanceMeasure() {
+            @Override
+            public double compute(double[] doubles, double[] doubles1) throws DimensionMismatchException {
+                int degToKmConstantX = 111;
+                int degToKmConstantY = 65;
+
+                double distance1 = Math.sqrt((doubles[0] - doubles1[0]) * (degToKmConstantX) * (doubles[0] - doubles1[0]) * (degToKmConstantX)
+                        + (doubles[1] - doubles1[1]) * (degToKmConstantY) * (doubles[1] - doubles1[1]) * (degToKmConstantY));
+
+
+                return distance1;
+            }
+        };
+
+        for (int f=0;f<searchRangeStartIndex;f++)
+        {
+            for (int g=searchRangeStartIndex;g<LStation.size();g++)
+            {
+                first[0]=LStation.get(f).getX();
+                first[1]=LStation.get(f).getY();
+                second[0]=LStation.get(g).getX();
+                second[1]=LStation.get(g).getY();
+                distance = distancer.compute(first,second);
+                if ((distance < 0.25) && (groupedStations[f] < 6))
+                {
+                    groupedStations[f]++;
+                    LStation.get(g).setActive(false);
+                    localSolution[g]=false;
+                    groupedStations[g]--;
+                }
+            }
+        }
+
+        for (int f=searchRangeStartIndex;f<LStation.size();f++){
+
+            if(localSolution[f]) {
+                for (int g=searchRangeStartIndex;g<LStation.size();g++ )
+                {
+                    if((g!=f)&&localSolution[g]) {
+                        first[0] = LStation.get(f).getX();
+                        first[1] = LStation.get(f).getY();
+                        second[0] = LStation.get(g).getX();
+                        second[1] = LStation.get(g).getY();
+                        distance = distancer.compute(first, second);
+                        if (distance < 0.25) {
+                            point = new DoublePoint(first);
+                            ServersToCluster.add(point);
+                            g=LStation.size()-1;
+
+                        }
+                    }
+                }
+
+            }
+        }
+
+        KMeansPlusPlusClusterer ServerClusterer = new KMeansPlusPlusClusterer(ServersToCluster.size()/3,-1);
+        ClusteredServers = ServerClusterer.cluster(ServersToCluster);
+
+        for (int i=0;i<ClusteredServers.size();i++){
+
+            List<DoublePoint> temp = new ArrayList<>();
+            temp = ClusteredServers.get(i).getPoints();
+            double min =distancer.compute(ClusteredServers.get(i).getCenter().getPoint(),temp.get(0).getPoint());
+            int temp_min_index =0;
+            for (int j=1;j<ClusteredServers.get(i).getPoints().size();j++){
+                double temp_min =distancer.compute(ClusteredServers.get(i).getCenter().getPoint(),temp.get(j).getPoint());
+                if (temp_min<min)
+                {
+                    min = temp_min;
+                    temp_min_index=j;
+                }
+
+
+            }
+            ClusteredServers.get(i).getCenter().getPoint()[0]=temp.get(temp_min_index).getPoint()[0];
+            ClusteredServers.get(i).getCenter().getPoint()[1]=temp.get(temp_min_index).getPoint()[1];
+        }
+        boolean haveNeighbours =true;
+        while (haveNeighbours) {
+            ServersToCluster.clear();
+            for (int i = 0; i < ClusteredServers.size(); i++) {
+                boolean freePoint =true;
+                for (int j = 0; j < ClusteredServers.size(); j++) {
+                    if (i != j) {
+                        first[0] = ClusteredServers.get(i).getCenter().getPoint()[0];
+                        first[1] = ClusteredServers.get(i).getCenter().getPoint()[1];
+                        second[0] = ClusteredServers.get(i).getCenter().getPoint()[0];
+                        second[1] = ClusteredServers.get(i).getCenter().getPoint()[1];
+                        distance = distancer.compute(first, second);
+                        if (distance < 0.25) {
+                            point = new DoublePoint(first);
+                            ServersToCluster.add(point);
+                            freePoint=false;
+                            j=ClusteredServers.size()-1;
+                        }
+                    }
+                }
+                if(freePoint)
+                {
+                   double X= ClusteredServers.get(i).getCenter().getPoint()[0];
+                   double Y= ClusteredServers.get(i).getCenter().getPoint()[1];
+
+                   for (int w=0;w<LStation.size();w++)
+                   {
+                       if ((X==LStation.get(w).getX())&&(Y==LStation.get(w).getY()))
+                       {
+                           localSolution[w]=true;
+                           groupedStations[w]+=ClusteredServers.get(i).getPoints().size();
+                       }
+                   }
+                }
+            }
+            if (ServersToCluster.size()>2){
+            ClusteredServers = ServerClusterer.cluster(ServersToCluster);
+            for (int i = 0; i < ClusteredServers.size(); i++) {
+
+                List<DoublePoint> temp = new ArrayList<>();
+                temp = ClusteredServers.get(i).getPoints();
+                double min = distancer.compute(ClusteredServers.get(i).getCenter().getPoint(), temp.get(0).getPoint());
+                int temp_min_index = 0;
+                for (int j = 1; j < ClusteredServers.get(i).getPoints().size(); j++) {
+                    double temp_min = distancer.compute(ClusteredServers.get(i).getCenter().getPoint(), temp.get(j).getPoint());
+                    if (temp_min < min) {
+                        min = temp_min;
+                        temp_min_index = j;
+                    }
+                }
+                ClusteredServers.get(i).getCenter().getPoint()[0] = temp.get(temp_min_index).getPoint()[0];
+                ClusteredServers.get(i).getCenter().getPoint()[1] = temp.get(temp_min_index).getPoint()[1];
+            }
+        }
+        else
+            {
+                haveNeighbours=false;
+            }
+        }
+    Random rand = new Random();
+        int los = rand.nextInt();
+    for (int i=0;i<LStation.size();i++)
+    {
+        if(groupedStations[i]>6)
+        {
+            if ((groupedStations[los]<6)&&(groupedStations[los]>1))
+            {
+                groupedStations[los]++;
+                groupedStations[i]--;
+            }
+
+        }
+    }
+
+
+
     }
 }
