@@ -321,7 +321,7 @@ public class SmartCharge implements StartPoint {
                         //lsAdditional: printing every 5th solution to file
                         if(improveWhileCounter % 10 == 0){
 
-                            String fileName = "SmartChargeNew/out/temp_" + improveWhileCounter + ".txt";
+                            String fileName = "out/temp_" + improveWhileCounter + ".txt";
 
                             PrintWriter paper2 = new PrintWriter(fileName, "UTF-8");
                             for (int i = 0; i < searchRangeStopIndex; i++) {
@@ -333,7 +333,7 @@ public class SmartCharge implements StartPoint {
                         }
 
                         //lsAdditional: adding this solution to file
-                        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("SmartChargeNew/out/ObjFunct.csv", true)))) {
+                        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("out/ObjFunct.csv", true)))) {
                             out.println(fNew);
                         }catch (IOException e) {
                             System.err.println(e);
@@ -444,7 +444,7 @@ public class SmartCharge implements StartPoint {
 
 
 
-        PrintWriter paper = new PrintWriter("SmartChargeNew/out/localSolution.txt", "UTF-8");
+        PrintWriter paper = new PrintWriter("out/localSolution.txt", "UTF-8");
         for (int i = 0; i < searchRangeStopIndex; i++) {
             if(localSolution[i] == true){
                 paper.println(LStation.get(i).getX() + ";" + LStation.get(i).getY());
