@@ -81,92 +81,141 @@ public class ListMapTools {
 
         Osmonaut naut = new Osmonaut(path.concat("/map.pbf"), filter);
 
-        naut.scan(new IOsmonautReceiver() {
-            float xCoord = 0;
-            float yCoord = 0;
+        if(CityName=="polska")
+        {
+            naut.scan(new IOsmonautReceiver() {
+                float xCoord = 0;
+                float yCoord = 0;
 
-
-            @Override
-            public boolean needsEntity(EntityType type, Tags tags) {
-                return (tags.hasKey("amenity")
-                        || tags.hasKey("office")
-                        || tags.hasKey("leisure")
-                        || tags.hasKey("aeroway")
-                        || tags.hasKey("building")
-                        || tags.hasKey("highway")
-                        || tags.hasKey("shop")
-                        || tags.hasKey("tourism"));
-            }
-
-            @Override
-            public void foundEntity(Entity entity) {
-
-                DoublePoint point;
-                if (entity.getTags().hasKeyValue("aeroway", "aerodrome")
-                        || entity.getTags().hasKeyValue("amenity", "charging_station")
-                        || entity.getTags().hasKeyValue("amenity", "fuel")
-                        || entity.getTags().hasKeyValue("amenity", "public_building")
-                        || entity.getTags().hasKeyValue("amenity", "college")
-                        || entity.getTags().hasKeyValue("amenity", "kindergarten")
-                        || entity.getTags().hasKeyValue("amenity", "place_of_worship")
-                        || entity.getTags().hasKeyValue("amenity", "school")
-                        || entity.getTags().hasKeyValue("amenity", "language_school")
-                        || entity.getTags().hasKeyValue("amenity", "university")
-                        || entity.getTags().hasKeyValue("amenity", "bank")
-                        || entity.getTags().hasKeyValue("amenity", "clinic")
-                        || entity.getTags().hasKeyValue("amenity", "dentist")
-                        || entity.getTags().hasKeyValue("amenity", "hospital")
-                        || entity.getTags().hasKeyValue("amenity", "pharmacy")
-                        || entity.getTags().hasKeyValue("amenity", "veterinary")
-                        || entity.getTags().hasKeyValue("amenity", "arts_centre")
-                        || entity.getTags().hasKeyValue("amenity", "cinema")
-                        || entity.getTags().hasKeyValue("amenity", "casino")
-                        || entity.getTags().hasKeyValue("amenity", "community_centre")
-                        || entity.getTags().hasKeyValue("amenity", "planetarium")
-                        || entity.getTags().hasKeyValue("amenity", "theatre")
-                        || entity.getTags().hasKeyValue("amenity", "courthouse")
-                        || entity.getTags().hasKeyValue("amenity", "post_office")
-                        || entity.getTags().hasKeyValue("building", "hotel")
-                        || entity.getTags().hasKeyValue("building", "trasformer_tower")
-                        || entity.getTags().hasKeyValue("building", "civic")
-                        || entity.getTags().hasKeyValue("building", "retail")
-                        || entity.getTags().hasKeyValue("building", "supermarket")
-                        || entity.getTags().hasKeyValue("building", "commercial")
-                        || entity.getTags().hasKeyValue("office", "government")
-                        || entity.getTags().hasKeyValue("office", "administrative")
-                        || entity.getTags().hasKeyValue("highway", "rest_area")
-                        || entity.getTags().hasKeyValue("highway", "services")
-                        || entity.getTags().hasKeyValue("leisure", "fitness_centre")
-                        || entity.getTags().hasKeyValue("leisure", "sports_centre")
-                        || entity.getTags().hasKeyValue("shop", "supermarket")
-                        || entity.getTags().hasKeyValue("shop", "mall")
-                        || entity.getTags().hasKeyValue("shop", "department_store")
-                        || entity.getTags().hasKeyValue("shop", "beauty")
-                        || entity.getTags().hasKeyValue("tourism", "gallery")
-                        || entity.getTags().hasKeyValue("tourism", "hotel")
-                        || entity.getTags().hasKeyValue("tourism", "museum")
-                        || entity.getTags().hasKeyValue("tourism", "zoo")
-                        ) {
-                    xCoord = (float) entity.getCenter().getLat();
-                    yCoord = (float) entity.getCenter().getLon();
-                    ServerCoords.add(new double[2]);
-                    ServerCoords.get(ServerCoords.size()-1)[0]=xCoord;
-                    ServerCoords.get(ServerCoords.size()-1)[1]=yCoord;
-
-                    point =  new DoublePoint(ServerCoords.get(ServerCoords.size()-1));
-                    if (entity.getTags().hasKeyValue("amenity","charging_station"))
-                    {
-                        ExistingStations.add(point);
-                    }
-                    else {
-                        ServersToCluster.add(point);
-                    }
-
+                @Override
+                public boolean needsEntity(EntityType type, Tags tags) {
+                    return (tags.hasKey("name")
+                            || tags.hasKey("brand")
+                            || tags.hasKey("highway")
+                            );
                 }
-            }
-        });
+
+                @Override
+                public void foundEntity(Entity entity) {
+
+                    DoublePoint point;
+                    if (entity.getTags().hasKeyValue("name", "Orlen")
+                        || entity.getTags().hasKeyValue("name", "Lotos")
+                        || entity.getTags().hasKeyValue("name", "BP")
+                            || entity.getTags().hasKeyValue("name", "Shell")
+                            || entity.getTags().hasKeyValue("name", "Circle K")
+                            || entity.getTags().hasKeyValue("name", "McDonald's")
+                            || entity.getTags().hasKeyValue("name", "Burger King")
+                            || entity.getTags().hasKeyValue("name", "KFC")
+                            || entity.getTags().hasKeyValue("brand", "Orlen")
+                            || entity.getTags().hasKeyValue("brand", "Lotos")
+                            || entity.getTags().hasKeyValue("brand", "BP")
+                            || entity.getTags().hasKeyValue("brand", "Shell")
+                            || entity.getTags().hasKeyValue("brand", "Circle K")
+                            || entity.getTags().hasKeyValue("highway", "rest_area")
+                            || entity.getTags().hasKeyValue("highway", "services")
+
+                            ) {
+                        xCoord = (float) entity.getCenter().getLat();
+                        yCoord = (float) entity.getCenter().getLon();
+                        ServerCoords.add(new double[2]);
+                        ServerCoords.get(ServerCoords.size() - 1)[0] = xCoord;
+                        ServerCoords.get(ServerCoords.size() - 1)[1] = yCoord;
+
+                        point = new DoublePoint(ServerCoords.get(ServerCoords.size() - 1));
+
+                            ServersToCluster.add(point);
 
 
+                    }
+                }
+            });
+
+        }
+        else {
+            naut.scan(new IOsmonautReceiver() {
+                float xCoord = 0;
+                float yCoord = 0;
+
+                @Override
+                public boolean needsEntity(EntityType type, Tags tags) {
+                    return (tags.hasKey("amenity")
+                            || tags.hasKey("office")
+                            || tags.hasKey("leisure")
+                            || tags.hasKey("aeroway")
+                            || tags.hasKey("building")
+                            || tags.hasKey("highway")
+                            || tags.hasKey("shop")
+                            || tags.hasKey("tourism"));
+                }
+
+                @Override
+                public void foundEntity(Entity entity) {
+
+                    DoublePoint point;
+                    if (entity.getTags().hasKeyValue("aeroway", "aerodrome")
+                            || entity.getTags().hasKeyValue("amenity", "charging_station")
+                            || entity.getTags().hasKeyValue("amenity", "fuel")
+                            || entity.getTags().hasKeyValue("amenity", "public_building")
+                            || entity.getTags().hasKeyValue("amenity", "college")
+                            || entity.getTags().hasKeyValue("amenity", "kindergarten")
+                            || entity.getTags().hasKeyValue("amenity", "place_of_worship")
+                            || entity.getTags().hasKeyValue("amenity", "school")
+                            || entity.getTags().hasKeyValue("amenity", "language_school")
+                            || entity.getTags().hasKeyValue("amenity", "university")
+                            || entity.getTags().hasKeyValue("amenity", "bank")
+                            || entity.getTags().hasKeyValue("amenity", "clinic")
+                            || entity.getTags().hasKeyValue("amenity", "dentist")
+                            || entity.getTags().hasKeyValue("amenity", "hospital")
+                            || entity.getTags().hasKeyValue("amenity", "pharmacy")
+                            || entity.getTags().hasKeyValue("amenity", "veterinary")
+                            || entity.getTags().hasKeyValue("amenity", "arts_centre")
+                            || entity.getTags().hasKeyValue("amenity", "cinema")
+                            || entity.getTags().hasKeyValue("amenity", "casino")
+                            || entity.getTags().hasKeyValue("amenity", "community_centre")
+                            || entity.getTags().hasKeyValue("amenity", "planetarium")
+                            || entity.getTags().hasKeyValue("amenity", "theatre")
+                            || entity.getTags().hasKeyValue("amenity", "courthouse")
+                            || entity.getTags().hasKeyValue("amenity", "post_office")
+                            || entity.getTags().hasKeyValue("building", "hotel")
+                            || entity.getTags().hasKeyValue("building", "trasformer_tower")
+                            || entity.getTags().hasKeyValue("building", "civic")
+                            || entity.getTags().hasKeyValue("building", "retail")
+                            || entity.getTags().hasKeyValue("building", "supermarket")
+                            || entity.getTags().hasKeyValue("building", "commercial")
+                            || entity.getTags().hasKeyValue("office", "government")
+                            || entity.getTags().hasKeyValue("office", "administrative")
+                            || entity.getTags().hasKeyValue("highway", "rest_area")
+                            || entity.getTags().hasKeyValue("highway", "services")
+                            || entity.getTags().hasKeyValue("leisure", "fitness_centre")
+                            || entity.getTags().hasKeyValue("leisure", "sports_centre")
+                            || entity.getTags().hasKeyValue("shop", "supermarket")
+                            || entity.getTags().hasKeyValue("shop", "mall")
+                            || entity.getTags().hasKeyValue("shop", "department_store")
+                            || entity.getTags().hasKeyValue("shop", "beauty")
+                            || entity.getTags().hasKeyValue("tourism", "gallery")
+                            || entity.getTags().hasKeyValue("tourism", "hotel")
+                            || entity.getTags().hasKeyValue("tourism", "museum")
+                            || entity.getTags().hasKeyValue("tourism", "zoo")
+                            ) {
+                        xCoord = (float) entity.getCenter().getLat();
+                        yCoord = (float) entity.getCenter().getLon();
+                        ServerCoords.add(new double[2]);
+                        ServerCoords.get(ServerCoords.size() - 1)[0] = xCoord;
+                        ServerCoords.get(ServerCoords.size() - 1)[1] = yCoord;
+
+                        point = new DoublePoint(ServerCoords.get(ServerCoords.size() - 1));
+                        if (entity.getTags().hasKeyValue("amenity", "charging_station")) {
+                            ExistingStations.add(point);
+                        } else {
+                            ServersToCluster.add(point);
+                        }
+
+                    }
+                }
+            });
+
+        }
 
         for (int i=0;i<ExistingStations.size();i++)
         {
@@ -329,7 +378,7 @@ public class ListMapTools {
     }
 
 
-    public static void groupStations(boolean[] localSolution, List<Station> LStation, int[] groupedStations,
+    /*public static void groupStations(boolean[] localSolution, List<Station> LStation, int[] groupedStations,
                                     int searchRangeStartIndex)
     {
         final ArrayList<double[]> ServerCoords = new ArrayList<double[]>();
@@ -371,34 +420,56 @@ public class ListMapTools {
                 }
             }
         }
+        System.out.println("pulled to fixed");
+        int NeighbourCounter;
+        List<Integer> neighbours;
+        boolean hasNeighbours = true;
+        while(hasNeighbours==true) {
+            neighbours = new ArrayList<>();
+            int NeighbourCounterMax = 0;
+            int NeighbourCounterIndex = 0;
+            for (int f = searchRangeStartIndex; f < LStation.size(); f++) {
+                NeighbourCounter = 0;
+                if (localSolution[f]) {
+                    for (int g = searchRangeStartIndex; g < LStation.size(); g++) {
+                        if ((g != f) && localSolution[g]) {
+                            first[0] = LStation.get(f).getX();
+                            first[1] = LStation.get(f).getY();
+                            second[0] = LStation.get(g).getX();
+                            second[1] = LStation.get(g).getY();
+                            distance = distancer.compute(first, second);
+                            if (distance < 0.25) {
+                                NeighbourCounter++;
+                                neighbours.add(g);
 
-        for (int f=searchRangeStartIndex;f<LStation.size();f++){
-
-            if(localSolution[f]) {
-                for (int g=searchRangeStartIndex;g<LStation.size();g++ )
-                {
-                    if((g!=f)&&localSolution[g]) {
-                        first[0] = LStation.get(f).getX();
-                        first[1] = LStation.get(f).getY();
-                        second[0] = LStation.get(g).getX();
-                        second[1] = LStation.get(g).getY();
-                        distance = distancer.compute(first, second);
-                        if (distance < 0.25) {
-                            point = new DoublePoint(first);
-                            ServersToCluster.add(point);
-                            g=LStation.size()-1;
-
+                            }
                         }
                     }
-                }
+                    if (NeighbourCounter > NeighbourCounterMax) {
+                        NeighbourCounterIndex = f;
+                        NeighbourCounterMax = NeighbourCounter;
+                    }
 
+                }
+            }
+            if(neighbours.size()>0) {
+                for (int i = 0; i < neighbours.size(); i++) {
+                    localSolution[neighbours.get(i)] = false;
+                    groupedStations[NeighbourCounterIndex]++;
+                }
+            }
+            else
+            {
+                hasNeighbours=false;
             }
         }
+        System.out.println("found crowded");
 
-        KMeansPlusPlusClusterer ServerClusterer = new KMeansPlusPlusClusterer(ServersToCluster.size()/3,-1);
+        /*KMeansPlusPlusClusterer ServerClusterer = new KMeansPlusPlusClusterer((int)(ServersToCluster.size()/2),-1);
         ClusteredServers = ServerClusterer.cluster(ServersToCluster);
+        System.out.println("clustered");*/
 
-        for (int i=0;i<ClusteredServers.size();i++){
+        /*for (int i=0;i<ClusteredServers.size();i++){
 
             List<DoublePoint> temp = new ArrayList<>();
             temp = ClusteredServers.get(i).getPoints();
@@ -417,6 +488,8 @@ public class ListMapTools {
             ClusteredServers.get(i).getCenter().getPoint()[0]=temp.get(temp_min_index).getPoint()[0];
             ClusteredServers.get(i).getCenter().getPoint()[1]=temp.get(temp_min_index).getPoint()[1];
         }
+        System.out.println("pulled centers to closest");
+
         boolean haveNeighbours =true;
         while (haveNeighbours) {
             ServersToCluster.clear();
@@ -452,6 +525,8 @@ public class ListMapTools {
                    }
                 }
             }
+            System.out.println("found crowded");
+
             if (ServersToCluster.size()>2){
             ClusteredServers = ServerClusterer.cluster(ServersToCluster);
             for (int i = 0; i < ClusteredServers.size(); i++) {
@@ -477,7 +552,7 @@ public class ListMapTools {
             }
         }
     Random rand = new Random();
-        int los = rand.nextInt();
+        int los = rand.nextInt(LStation.size());
     for (int i=0;i<LStation.size();i++)
     {
         if(groupedStations[i]>6)
@@ -491,7 +566,5 @@ public class ListMapTools {
         }
     }
 
-
-
-    }
+    }*/
 }
