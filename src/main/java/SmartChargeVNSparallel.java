@@ -12,44 +12,26 @@ import org.pcj.*;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
-@RegisterStorage(SmartCharge.Shared.class)
-public class SmartCharge implements StartPoint {
+@RegisterStorage(SmartChargeVNSparallel.Shared.class)
+public class SmartChargeVNSparallel implements StartPoint {
 
-    public void groupPCJbarrier(int firstGroupMember, int numberOfThreadsInGroup) {
 
-        if(numberOfThreadsInGroup != 1) {
-            if (PCJ.myId() >= firstGroupMember + 1 && PCJ.myId() < firstGroupMember + numberOfThreadsInGroup - 1) {
-                PCJ.barrier(PCJ.myId() + 1);
-                PCJ.barrier(PCJ.myId() - 1);
-            } else if (PCJ.myId() == (firstGroupMember + numberOfThreadsInGroup - 1)) {
-                PCJ.barrier(firstGroupMember);
-                PCJ.barrier(PCJ.myId() - 1);
-            } else if (PCJ.myId() == firstGroupMember) {
-                PCJ.barrier(firstGroupMember + numberOfThreadsInGroup - 1);
-                PCJ.barrier(PCJ.myId() + 1);
-            }
-        } else {
-            PCJ.barrier();
-        }
-    }
-
-    @Storage(SmartCharge.class)
+    @Storage(SmartChargeVNSparallel.class)
     enum Shared {
         localSolution,
-        currentBestColumnSum,
-        currentBestCandidateListIndex
+        localSolutionValue,
+        checkedOut
 
     }
 
-    boolean[] localSolution = new boolean[3700]; //size has to be greater than number of potential stations to accomodate real
-    // world stations that are obligatory solutions
-    float currentBestColumnSum = 1;
-    int currentBestCandidateListIndex = 0;
+    boolean[] localSolution = new boolean[3700];
+    float localSolutionValue = 0;
+    boolean checkedOut = false;
+
 
     public static void main(String[] args) throws IOException {
 
@@ -57,28 +39,185 @@ public class SmartCharge implements StartPoint {
         if (AuxTools.FileExists("nodes.txt")) {  // hpc run case
             nd = new NodesDescription("nodes.txt");
         } else {  //local run case
-            String[] nodes = {"localhost"};//, "localhost","localhost", "localhost"};
+            String[] nodes = {"localhost", "localhost"};//,"localhost", "localhost"};
             nd = new NodesDescription(nodes);
         }
 
-        PCJ.deploy(SmartCharge.class, nd);
+        PCJ.deploy(SmartChargeVNSparallel.class, nd);
     }
 
     @Override
     public void main() throws Throwable {
-        System.out.println("Hello from: " + PCJ.myId() + " of " + PCJ.threadCount());
-        int thisManyStations = 1000; // number of stations to be allocated in a given station list
+
+        Group cityGroup = new Group() {
+            @Override
+            public int myId() {
+                return 0;
+            }
+
+            @Override
+            public int threadCount() {
+                return 0;
+            }
+
+            @Override
+            public String getGroupName() {
+                return null;
+            }
+
+            @Override
+            public PcjFuture<Void> asyncBarrier() {
+                return null;
+            }
+
+            @Override
+            public PcjFuture<Void> asyncBarrier(int i) {
+                return null;
+            }
+
+            @Override
+            public <T> PcjFuture<T> asyncGet(int i, Enum<?> anEnum, int... ints) {
+                return null;
+            }
+
+            @Override
+            public <T> PcjFuture<Void> asyncPut(T t, int i, Enum<?> anEnum, int... ints) {
+                return null;
+            }
+
+            @Override
+            public <T> PcjFuture<T> asyncAt(int i, AsyncTask<T> asyncTask) {
+                return null;
+            }
+
+            @Override
+            public <T> PcjFuture<Void> asyncBroadcast(T t, Enum<?> anEnum, int... ints) {
+                return null;
+            }
+        };
+        Group citySubGroup = new Group() {
+            @Override
+            public int myId() {
+                return 0;
+            }
+
+            @Override
+            public int threadCount() {
+                return 0;
+            }
+
+            @Override
+            public String getGroupName() {
+                return null;
+            }
+
+            @Override
+            public PcjFuture<Void> asyncBarrier() {
+                return null;
+            }
+
+            @Override
+            public PcjFuture<Void> asyncBarrier(int i) {
+                return null;
+            }
+
+            @Override
+            public <T> PcjFuture<T> asyncGet(int i, Enum<?> anEnum, int... ints) {
+                return null;
+            }
+
+            @Override
+            public <T> PcjFuture<Void> asyncPut(T t, int i, Enum<?> anEnum, int... ints) {
+                return null;
+            }
+
+            @Override
+            public <T> PcjFuture<T> asyncAt(int i, AsyncTask<T> asyncTask) {
+                return null;
+            }
+
+            @Override
+            public <T> PcjFuture<Void> asyncBroadcast(T t, Enum<?> anEnum, int... ints) {
+                return null;
+            }
+        };
+
+        List<String> cityName = new ArrayList<>();
+        List<Integer> cityProblemSize = new ArrayList<>();
+        List<Integer> cityProblemSizeOverwrite = new ArrayList<>();
+
+        if (AuxTools.FileExists("resources/data/info.txt")) {  // hpc run case
+            Scanner sc = null;
+            sc = new Scanner(new File("resources/data/info.txt"));
+
+            String line;
+            while(sc.hasNext()) {
+                if (sc.hasNextLine()) {
+                    line = sc.nextLine();
+
+                    cityName.add(line.split(";")[0]);
+                    cityProblemSize.add(Integer.parseInt(line.split(";")[1]));
+                    cityProblemSizeOverwrite.add(Integer.parseInt(line.split(";")[2]));
+
+                } else {
+                    sc.next();
+                }
+            }
+
+        } else {
+            System.out.println("ERROR: resources/data/info.txt does not exist");
+        }
+
+        //CALCULATION OF NODES TO BE USED
+        List<Integer> nodesPerCity = new ArrayList<>();
+
+        int coresMulti = 24;
+        for (int i = 0; i < cityProblemSize.size(); i++) {
+            // USING OVERWRITE ONLY
+            nodesPerCity.add(cityProblemSizeOverwrite.get(i) * coresMulti);
+        }
+
+
+
+
+
+
+
+        //SET CITY GROUPS (and get thisManyStations for each core);
+        int thisManyStations = -1;
+
+        int num = 0; //int num = 0;
+        //while (num < 2) {
+
+            for (int i = 0; i < cityProblemSizeOverwrite.size(); i++) {
+                for (int j = 0; j < cityProblemSizeOverwrite.get(i); j++) {
+                    //System.out.println(names[i]);
+                    if (PCJ.myId() == num) {
+                        cityGroup = PCJ.join(cityName.get(i));
+                        thisManyStations = cityProblemSize.get(i);
+                    }
+                    num++;
+                }
+            }
+        //}
+
+        System.out.println( PCJ.myId() + "  " + cityGroup.myId()  );
+        PCJ.barrier();
+        System.out.println(cityGroup.getGroupName());
+
 
         //LOADING MAP DATA (CLIENTS/STATIONS)
         ListMapTools dataLoader = new ListMapTools();
 
         //NOTE TO SELF: don't be bothered by "E: Node for way not found". It's normal. It also takes considerable amount of time
         List<Cluster> LCluster = new ArrayList<>();
-        LCluster = dataLoader.FindClients("warszawa",10); //divides number of stations clustering ratio
+        LCluster = dataLoader.FindClients(cityGroup.getGroupName(),10); //divides number of stations clustering ratio
         List<Station> LStation = new ArrayList<>();
-        LStation = dataLoader.FindServers("warszawa");
+        LStation = dataLoader.FindServers(cityGroup.getGroupName());
 
-        //end temp initialization------------------------------------------------------------------------------------
+
+
+//SMART CHARGE START--------------------------------------------------------------
 
 
         System.out.println("LStation.size() = " + LStation.size() + ", LCluster.size() = " + LCluster.size());
@@ -86,12 +225,10 @@ public class SmartCharge implements StartPoint {
         int alreadyAddedStations; //number of added stations with below statement
         alreadyAddedStations =  AuxTools.setIntercityStationsActive(LStation);
 
-        LStation = ListMapTools.ServerCandidatesClustering (LStation, thisManyStations, alreadyAddedStations, 1.5); //number of stations in the output = multiplier * thisManyStations
+        //Initial Stations clustering function here
 
         float[][] distancesArray = new float[LCluster.size()][LStation.size()];  //[i][j]
         distancesArray = AuxTools.makeDistanceArray(LCluster, LStation);
-        System.out.println("distancesArray lengths: " + distancesArray.length + ",  " + distancesArray[0].length);
-
         int[][] sortedDistancesArrayIndexesArray = new int[distancesArray.length][distancesArray[0].length];
         sortedDistancesArrayIndexesArray = AuxTools.makeSortedDistanceArrayIndexesArray(distancesArray);
 
@@ -99,14 +236,70 @@ public class SmartCharge implements StartPoint {
         int searchRangeStopIndex = LStation.size()-1;
         System.out.println("searchRangeStartIndex = "+ searchRangeStartIndex);
         System.out.println("searchRangeStopIndex = " + searchRangeStopIndex);
+
         AuxTools.initializeLocalSolution(false, localSolution, searchRangeStartIndex, searchRangeStopIndex);
 
-        dataLoader.initializeByClustering(localSolution, LStation, thisManyStations, alreadyAddedStations, searchRangeStartIndex, searchRangeStopIndex);
+        System.out.println("distancesArray lengths: " + distancesArray.length + ",  " + distancesArray[0].length);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        long startTime;
+        long stopTime;
+        long elapsedTime;
+        System.out.println("TWOJA FUNKCJA - START");
+        startTime = System.nanoTime();
+
+        //TU WKLEJ FUNKCJĘ - START
+        //initialize(boolean[] localSolution, List<station> LStation, int thisManyStations, int alreadyAddedStations, int searchRangeStartIndex,  int searchRangeStopIndex)
+
+        ListMapTools.initializeByClustering(localSolution, LStation, thisManyStations, alreadyAddedStations, searchRangeStartIndex, searchRangeStopIndex);
+
+        //TU WKLEJ FUNKCJĘ - STOP
+
+        stopTime = System.nanoTime();
+        System.out.println("TWOJA FUNKCJA - END");
+        elapsedTime = stopTime - startTime;
+        System.out.println("TWOJA FUNKCJA  elapsed time: " + elapsedTime + "ns ( " +elapsedTime/1000000000 +"s )" );
+
+
+//        for (int i = searchRangeStartIndex+200; i < searchRangeStartIndex+thisManyStations-200; i++) {
+//            localSolution[i] = true;
+//        }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         //OBJ FUNCTION CALCULATION TEMP - START
-        float objFunctVal = AuxTools.objectiveFunction3(localSolution, distancesArray, sortedDistancesArrayIndexesArray);
-        System.out.println("Objective function value = " + objFunctVal);
+        localSolutionValue = AuxTools.objectiveFunction3(localSolution, distancesArray, sortedDistancesArrayIndexesArray);
+        System.out.println("Objective function value = " + localSolutionValue);
         //OBJ FUNCTION CALCULATION TEMP - END
 
 
@@ -150,7 +343,7 @@ public class SmartCharge implements StartPoint {
         int counterSHAKE = 0;
         int counterLS = 0;
 
-        long startTime = System.nanoTime();
+        startTime = System.nanoTime();
         while( (System.nanoTime()-startTime)/1000000000 < 10*60 ){//while(t <tMax); "time in minutes"*60
             counterWhileTime++;
             System.out.println("             WhileTIME " + counterWhileTime);
@@ -162,7 +355,7 @@ public class SmartCharge implements StartPoint {
 
                 //if(firstTime = false) {// we don't want to shuffle our initial solution (1 loop run)
                     counterSHAKE++;
-                    System.out.println("      SHAKE " + counterSHAKE);
+                    System.out.println("      SHAKE " + counterSHAKE + "(k = " + k + ")");
                     //VNS_6-10: we don't use hash. Just perform shake;
                     //shake - start
                     System.arraycopy(localSolution, 0, tempLocalSolution, 0, localSolution.length);
@@ -224,13 +417,13 @@ public class SmartCharge implements StartPoint {
                 float improveValue = Float.MAX_VALUE; //used with while("relative improvement") at ls2
                 float previousValue = 1;
 
-                System.out.println("While(improve)-START");
+                //System.out.println("While(improve)-START");
                 //ls2:
                 int improveWhileCounter = 0;
                 //while (improve) { //instead (see below) we consider the improvement value relative to the value at the beginning
                     while (improveValue/previousValue > 0.0002) { //0.0001
-                    improveWhileCounter ++;
-                    System.out.println("While(improve) " + improveWhileCounter + " value: " + improveValue/previousValue);
+                    improveWhileCounter++;
+                    //System.out.println("While(improve) " + improveWhileCounter + " value: " + improveValue/previousValue);
 
                     //ls3:
                     improve = false; //substituted with value below
@@ -248,7 +441,6 @@ public class SmartCharge implements StartPoint {
                     //      the beginning of solution array).
                     //     -solution array is longer than the length of an actual solution. There is no need to iterate through
                     //      it all hence searchRangeStopIndex is applied.
-                    System.out.println("SEARCH FOR jDROP -START");
                     for (int j = searchRangeStartIndex; j <= searchRangeStopIndex; j++) {
                         if (tempLocalSolution[j] == true) {// has to be equal to true because we search through active stations only
                             //ls6: f represents value of objective function increased as a result of substracting one station (of
@@ -274,7 +466,6 @@ public class SmartCharge implements StartPoint {
                     float fAdd = Float.MAX_VALUE;
                     int jAdd = -1; // there is "IF" below so there is a warning about potencial lack of initialization. The
                     // value assigned here does not mean anything. Meaningful value is assigned at ls15.
-                    System.out.println("SEARCH FOR jADD -START");
                     //ls12:
                     for (int j = searchRangeStartIndex; j <= searchRangeStopIndex; j++) {
                         if (tempLocalSolution[j] == false) {// has to be equal to true because we search through active stations
@@ -315,25 +506,27 @@ public class SmartCharge implements StartPoint {
                         previousValue = fOld;
 
 
-                        //lsAdditional: printing every 5th solution to file
-                        if(improveWhileCounter % 10 == 0){
-
-                            String fileName = "out/temp_" + improveWhileCounter + ".txt";
-
-                            PrintWriter paper2 = new PrintWriter(fileName, "UTF-8");
-                            for (int i = 0; i < searchRangeStopIndex; i++) {
-                                if(tempLocalSolution[i] == true){
-                                    paper2.println(LStation.get(i).getX() + ";" + LStation.get(i).getY());
-                                }
-                            }
-                            paper2.close();
-                        }
+//                        //lsAdditional: printing every 5th solution to file
+//                        if(improveWhileCounter % 10 == 0){
+//                            String fileName = "/Users/Mateusz/Desktop/OUT/temp_" + improveWhileCounter + ".txt";
+//
+//                            PrintWriter paper2 = new PrintWriter(fileName, "UTF-8");
+//                            for (int i = 0; i < searchRangeStopIndex; i++) {
+//                                if(tempLocalSolution[i] == true){
+//                                    paper2.println(LStation.get(i).getX() + ";" + LStation.get(i).getY());
+//                                }
+//                            }
+//                            paper2.close();
+//                        }
 
                         //lsAdditional: adding this solution to file
-                        try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter("out/ObjFunct.csv", true)))) {
-                            out.println(fNew);
-                        }catch (IOException e) {
-                            System.err.println(e);
+                        if(cityGroup.myId() == 0) {
+                            String fileName = "out/ObjFunct_" + cityGroup.getGroupName() + ".csv";
+                            try (PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(fileName, true)))) {
+                                out.println(fNew);
+                            } catch (IOException e) {
+                                System.err.println(e);
+                            }
                         }
 
                     }
@@ -375,6 +568,37 @@ public class SmartCharge implements StartPoint {
                     //VNS_16: we move by kStep not by one
                     k += kStep;
                 }
+
+                //VNS_PARALLEL-start
+                PcjFuture checkedOutFuture = null;
+                for (int i = 0; i < cityGroup.threadCount(); i++) {
+                    do{
+                        checkedOutFuture = cityGroup.asyncGet(i, Shared.checkedOut);
+                    }while((boolean) checkedOutFuture.get());
+
+
+                    PcjFuture localSolutionValueFuture = null;
+                    localSolutionValueFuture = cityGroup.asyncGet(i, Shared.localSolutionValue);
+                    float templocalSolutionValue = (float)localSolutionValueFuture.get();
+
+
+                    if(templocalSolutionValue < localSolutionValue) {
+                        System.out.println("SYNCING");
+                        PcjFuture localSolutionFuture = null;
+                        localSolutionFuture = cityGroup.asyncGet(i, Shared.localSolution);
+                        boolean[] array = (boolean[]) localSolutionFuture.get();
+
+                        checkedOut = true;
+                        System.arraycopy(array, 0, localSolution, 0, array.length);
+                        localSolutionValue = templocalSolutionValue;
+                        checkedOut = false;
+
+                    }
+                }
+
+
+
+                //VNS_PARALLEL-stop
 
                 //VNS_17: end of the loop
             }
@@ -441,15 +665,17 @@ public class SmartCharge implements StartPoint {
 
 
 
-        PrintWriter paper = new PrintWriter("out/localSolution.txt", "UTF-8");
-        for (int i = 0; i < searchRangeStopIndex; i++) {
-            if(localSolution[i] == true){
-                paper.println(LStation.get(i).getX() + ";" + LStation.get(i).getY());
+        if(cityGroup.myId() == 0) {
+            String fileName = "out/localSolution_" + cityGroup.getGroupName() + ".txt";
+            PrintWriter paper = new PrintWriter(fileName, "UTF-8");
+            for (int i = 0; i < searchRangeStopIndex; i++) {
+                if (localSolution[i] == true) {
+                    paper.println(LStation.get(i).getX() + ";" + LStation.get(i).getY());
+                }
+
             }
-
+            paper.close();
         }
-        paper.close();
-
 
 
     } //end main throws...
