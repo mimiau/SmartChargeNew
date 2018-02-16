@@ -12,13 +12,12 @@ import org.pcj.*;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
-@RegisterStorage(SmartCharge.Shared.class)
-public class SmartCharge implements StartPoint {
+@RegisterStorage(SmartChargeVNSnp.Shared.class)
+public class SmartChargeVNSnp implements StartPoint {
 
     public void groupPCJbarrier(int firstGroupMember, int numberOfThreadsInGroup) {
 
@@ -38,7 +37,7 @@ public class SmartCharge implements StartPoint {
         }
     }
 
-    @Storage(SmartCharge.class)
+    @Storage(SmartChargeVNSnp.class)
     enum Shared {
         localSolution,
         currentBestColumnSum,
@@ -61,7 +60,7 @@ public class SmartCharge implements StartPoint {
             nd = new NodesDescription(nodes);
         }
 
-        PCJ.deploy(SmartCharge.class, nd);
+        PCJ.deploy(SmartChargeVNSnp.class, nd);
     }
 
     @Override

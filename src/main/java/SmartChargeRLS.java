@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 
-@RegisterStorage(SmartChargeBackup.Shared.class)
-public class SmartChargeBackup implements StartPoint {
+@RegisterStorage(SmartChargeRLS.Shared.class)
+public class SmartChargeRLS implements StartPoint {
 
     public void groupPCJbarrier(int firstGroupMember, int numberOfThreadsInGroup) {
 
@@ -37,7 +37,7 @@ public class SmartChargeBackup implements StartPoint {
         }
     }
 
-    @Storage(SmartChargeBackup.class)
+    @Storage(SmartChargeRLS.class)
     enum Shared {
         localSolution,
         currentBestColumnSum,
@@ -60,7 +60,7 @@ public class SmartChargeBackup implements StartPoint {
             nd = new NodesDescription(nodes);
         }
 
-        PCJ.deploy(SmartChargeBackup.class, nd);
+        PCJ.deploy(SmartChargeRLS.class, nd);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class SmartChargeBackup implements StartPoint {
         int MyThreadsNum = PCJ.threadCount(); //number of threads assigned counted from alpha
 
         //temp initialization.
-        thisManyStations = 1000;
+        thisManyStations = 500;
 
         if (AuxTools.FileExists("/Users/Mateusz/Desktop/warszawa_servers_restricted.txt")) {  // hpc run case
             Scanner sc = null;
@@ -374,7 +374,7 @@ public class SmartChargeBackup implements StartPoint {
 
 
                 //lsAdditional: printing every 5th solution to file
-                if(improveWhileCounter % 5 == 0){
+                if(improveWhileCounter % 200 == 0){
 
                     String fileName = "/Users/Mateusz/Desktop/temp_" + improveWhileCounter + ".txt";
 
