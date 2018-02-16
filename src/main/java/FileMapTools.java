@@ -81,7 +81,7 @@ public class FileMapTools {
         String path ="resources/data/";
         path=path.concat(CityName);
         PrintWriter servers = new PrintWriter(path.concat("/servers.txt"), "UTF-8");
-        PrintWriter servers_clustered = new PrintWriter(path.concat("/servers_clustered.txt"),"UTF-8");
+        //PrintWriter servers_clustered = new PrintWriter(path.concat("/servers_clustered.txt"),"UTF-8");
         final ArrayList<double[]> ServerCoords = new ArrayList<double[]>();
         final List<DoublePoint> ServersToCluster = new ArrayList<>();
         List<CentroidCluster> ClusteredServers;
@@ -101,7 +101,8 @@ public class FileMapTools {
                         || tags.hasKey("aeroway")
                         || tags.hasKey("building")
                         || tags.hasKey("highway")
-                        || tags.hasKey("shop"));
+                        || tags.hasKey("shop")
+                        || tags.hasKey("tourism"));
             }
 
             @Override
@@ -110,6 +111,8 @@ public class FileMapTools {
                 DoublePoint point;
                 if (entity.getTags().hasKeyValue("aeroway", "aerodrome")
                         || entity.getTags().hasKeyValue("amenity", "charging_station")
+                        || entity.getTags().hasKeyValue("amenity", "fuel")
+                        || entity.getTags().hasKeyValue("amenity", "public_building")
                         || entity.getTags().hasKeyValue("amenity", "college")
                         || entity.getTags().hasKeyValue("amenity", "kindergarten")
                         || entity.getTags().hasKeyValue("amenity", "place_of_worship")
@@ -118,6 +121,7 @@ public class FileMapTools {
                         || entity.getTags().hasKeyValue("amenity", "university")
                         || entity.getTags().hasKeyValue("amenity", "bank")
                         || entity.getTags().hasKeyValue("amenity", "clinic")
+                        || entity.getTags().hasKeyValue("amenity", "dentist")
                         || entity.getTags().hasKeyValue("amenity", "hospital")
                         || entity.getTags().hasKeyValue("amenity", "pharmacy")
                         || entity.getTags().hasKeyValue("amenity", "veterinary")
@@ -132,6 +136,9 @@ public class FileMapTools {
                         || entity.getTags().hasKeyValue("building", "hotel")
                         || entity.getTags().hasKeyValue("building", "trasformer_tower")
                         || entity.getTags().hasKeyValue("building", "civic")
+                        || entity.getTags().hasKeyValue("building", "retail")
+                        || entity.getTags().hasKeyValue("building", "supermarket")
+                        || entity.getTags().hasKeyValue("building", "commercial")
                         || entity.getTags().hasKeyValue("office", "government")
                         || entity.getTags().hasKeyValue("office", "administrative")
                         || entity.getTags().hasKeyValue("highway", "rest_area")
@@ -140,7 +147,13 @@ public class FileMapTools {
                         || entity.getTags().hasKeyValue("leisure", "sports_centre")
                         || entity.getTags().hasKeyValue("shop", "supermarket")
                         || entity.getTags().hasKeyValue("shop", "mall")
-                        || entity.getTags().hasKeyValue("shop", "department_store")) {
+                        || entity.getTags().hasKeyValue("shop", "department_store")
+                        || entity.getTags().hasKeyValue("shop", "beauty")
+                        || entity.getTags().hasKeyValue("tourism", "gallery")
+                        || entity.getTags().hasKeyValue("tourism", "hotel")
+                        || entity.getTags().hasKeyValue("tourism", "museum")
+                        || entity.getTags().hasKeyValue("tourism", "zoo")
+                        ) {
                     xCoord = (float) entity.getCenter().getLat();
                     yCoord = (float) entity.getCenter().getLon();
                     ServerCoords.add(new double[2]);
@@ -159,18 +172,18 @@ public class FileMapTools {
 
         System.out.println("Wypisałem serwery do klastrowania");
 
-        KMeansPlusPlusClusterer ClientsClusterer = new KMeansPlusPlusClusterer(StationsToPut,-1);
-        ClusteredServers = ClientsClusterer.cluster(ServersToCluster);
+        /*
+            KMeansPlusPlusClusterer ClientsClusterer = new KMeansPlusPlusClusterer(StationsToPut, -1);
+            ClusteredServers = ClientsClusterer.cluster(ServersToCluster);
 
-        for (int i=0;i<ClusteredServers.size();i++)
-        {
-            servers_clustered.println(ClusteredServers.get(i).getCenter().getPoint()[0]+";"+ClusteredServers.get(i).getCenter().getPoint()[1]/*+";"+ClusteredClients.get(i).getPoints().size()*/);
-        }
-        System.out.println("Wypisałem klastry serwerów");
-
+            for (int i = 0; i < ClusteredServers.size(); i++) {
+                servers_clustered.println(ClusteredServers.get(i).getCenter().getPoint()[0] + ";" + ClusteredServers.get(i).getCenter().getPoint()[1]/*+";"+ClusteredClients.get(i).getPoints().size()*;
+            }
+            System.out.println("Wypisałem klastry serwerów");
+        */
 
         servers.close();
-        servers_clustered.close();
+        //servers_clustered.close();
 
     }
 }
