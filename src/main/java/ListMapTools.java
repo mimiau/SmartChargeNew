@@ -9,10 +9,6 @@ import org.apache.commons.math3.ml.clustering.CentroidCluster;
 import org.apache.commons.math3.ml.clustering.DoublePoint;
 import org.apache.commons.math3.ml.clustering.KMeansPlusPlusClusterer;
 import org.apache.commons.math3.ml.distance.DistanceMeasure;
-
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -97,7 +93,8 @@ public class ListMapTools {
                         || tags.hasKey("aeroway")
                         || tags.hasKey("building")
                         || tags.hasKey("highway")
-                        || tags.hasKey("shop"));
+                        || tags.hasKey("shop")
+                        || tags.hasKey("tourism"));
             }
 
             @Override
@@ -106,6 +103,8 @@ public class ListMapTools {
                 DoublePoint point;
                 if (entity.getTags().hasKeyValue("aeroway", "aerodrome")
                         || entity.getTags().hasKeyValue("amenity", "charging_station")
+                        || entity.getTags().hasKeyValue("amenity", "fuel")
+                        || entity.getTags().hasKeyValue("amenity", "public_building")
                         || entity.getTags().hasKeyValue("amenity", "college")
                         || entity.getTags().hasKeyValue("amenity", "kindergarten")
                         || entity.getTags().hasKeyValue("amenity", "place_of_worship")
@@ -114,6 +113,7 @@ public class ListMapTools {
                         || entity.getTags().hasKeyValue("amenity", "university")
                         || entity.getTags().hasKeyValue("amenity", "bank")
                         || entity.getTags().hasKeyValue("amenity", "clinic")
+                        || entity.getTags().hasKeyValue("amenity", "dentist")
                         || entity.getTags().hasKeyValue("amenity", "hospital")
                         || entity.getTags().hasKeyValue("amenity", "pharmacy")
                         || entity.getTags().hasKeyValue("amenity", "veterinary")
@@ -128,6 +128,9 @@ public class ListMapTools {
                         || entity.getTags().hasKeyValue("building", "hotel")
                         || entity.getTags().hasKeyValue("building", "trasformer_tower")
                         || entity.getTags().hasKeyValue("building", "civic")
+                        || entity.getTags().hasKeyValue("building", "retail")
+                        || entity.getTags().hasKeyValue("building", "supermarket")
+                        || entity.getTags().hasKeyValue("building", "commercial")
                         || entity.getTags().hasKeyValue("office", "government")
                         || entity.getTags().hasKeyValue("office", "administrative")
                         || entity.getTags().hasKeyValue("highway", "rest_area")
@@ -136,7 +139,13 @@ public class ListMapTools {
                         || entity.getTags().hasKeyValue("leisure", "sports_centre")
                         || entity.getTags().hasKeyValue("shop", "supermarket")
                         || entity.getTags().hasKeyValue("shop", "mall")
-                        || entity.getTags().hasKeyValue("shop", "department_store")) {
+                        || entity.getTags().hasKeyValue("shop", "department_store")
+                        || entity.getTags().hasKeyValue("shop", "beauty")
+                        || entity.getTags().hasKeyValue("tourism", "gallery")
+                        || entity.getTags().hasKeyValue("tourism", "hotel")
+                        || entity.getTags().hasKeyValue("tourism", "museum")
+                        || entity.getTags().hasKeyValue("tourism", "zoo")
+                        ) {
                     xCoord = (float) entity.getCenter().getLat();
                     yCoord = (float) entity.getCenter().getLon();
                     ServerCoords.add(new double[2]);
@@ -180,6 +189,78 @@ public class ListMapTools {
 
     return Stations;
     }
+
+    public static List<Station> ServerCandidatesClustering(List<Station> LStation, int thisManyStations, int alreadyAddedStations,double multipler)
+    {
+        final ArrayList<double[]> ServerCoords = new ArrayList<double[]>();
+        final List<DoublePoint> ServersToCluster = new ArrayList<>();
+        List<CentroidCluster> ClusteredServers;
+        DoublePoint point;
+        List<Station> ChoosenStations = new ArrayList<>();
+        int FixedStationsAmount=0;
+        for (int i=0;i<LStation.size();i++) {
+            if (LStation.get(i).isActive() == false) {
+                ServerCoords.add(new double[2]);
+                ServerCoords.get(ServerCoords.size() - 1)[0] = LStation.get(i).getX();
+                ServerCoords.get(ServerCoords.size() - 1)[1] = LStation.get(i).getY();
+                point = new DoublePoint(ServerCoords.get(ServerCoords.size() - 1));
+                ServersToCluster.add(point);
+            }
+            else
+            {
+                FixedStationsAmount++;
+            }
+        }
+
+            KMeansPlusPlusClusterer ServerClusterer = new KMeansPlusPlusClusterer((int)((thisManyStations-alreadyAddedStations)*multipler),-1);
+            ClusteredServers = ServerClusterer.cluster(ServersToCluster);
+            DistanceMeasure distancer = new DistanceMeasure() {
+                @Override
+                public double compute(double[] doubles, double[] doubles1) throws DimensionMismatchException {
+                    int degToKmConstantX = 111;
+                    int degToKmConstantY = 65;
+
+                    double distance1 = Math.sqrt((doubles[0] - doubles1[0]) * (degToKmConstantX) * (doubles[0] - doubles1[0]) * (degToKmConstantX)
+                            + (doubles[1] - doubles1[1]) * (degToKmConstantY) * (doubles[1] - doubles1[1]) * (degToKmConstantY));
+
+
+                    return distance1;
+                }
+            };
+            for (int i=0;i<ClusteredServers.size();i++){
+                List<DoublePoint> temp = new ArrayList<>();
+                temp = ClusteredServers.get(i).getPoints();
+                double min =distancer.compute(ClusteredServers.get(i).getCenter().getPoint(),temp.get(0).getPoint());
+                int temp_min_index =0;
+                for (int j=1;j<ClusteredServers.get(i).getPoints().size();j++){
+                    double temp_min =distancer.compute(ClusteredServers.get(i).getCenter().getPoint(),temp.get(j).getPoint());
+                    if (temp_min<min)
+                    {
+                        min = temp_min;
+                        temp_min_index=j;
+                    }
+
+
+                }
+                ClusteredServers.get(i).getCenter().getPoint()[0]=temp.get(temp_min_index).getPoint()[0];
+                ClusteredServers.get(i).getCenter().getPoint()[1]=temp.get(temp_min_index).getPoint()[1];
+            }
+
+            //ChoosenStations.clear();
+            for (int i=0;i<ClusteredServers.size();i++)
+            {
+                Station temp = new Station();
+                temp.setX((float)ClusteredServers.get(i).getCenter().getPoint()[0]);
+                temp.setY((float)ClusteredServers.get(i).getCenter().getPoint()[1]);
+                temp.setActive(false);
+                ChoosenStations.add(temp);
+            }
+        LStation = LStation.subList(0,FixedStationsAmount);
+        LStation.addAll(ChoosenStations);
+
+    return LStation;
+    }
+
 
     public static void initializeByClustering(boolean[] localSolution, List<Station> LStation, int thisManyStations, int alreadyAddedStations,
                                               int searchRangeStartIndex, int searchRangeStopIndex)
