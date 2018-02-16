@@ -39,11 +39,11 @@ public class SmartChargeVNSparallel implements StartPoint {
         if (AuxTools.FileExists("nodes.txt")) {  // hpc run case
             nd = new NodesDescription("nodes.txt");
         } else {  //local run case
-            String[] nodes = {"localhost", "localhost"};//,"localhost", "localhost"};
+            String[] nodes = {"localhost"};//, "localhost"};//,"localhost", "localhost"};
             nd = new NodesDescription(nodes);
         }
 
-        PCJ.deploy(SmartChargeVNSparallel.class, nd);
+        PCJ.start(SmartChargeVNSparallel.class, nd);
     }
 
     @Override
@@ -186,20 +186,24 @@ public class SmartChargeVNSparallel implements StartPoint {
         //SET CITY GROUPS (and get thisManyStations for each core);
         int thisManyStations = -1;
 
-        int num = 0; //int num = 0;
-        //while (num < 2) {
+        int num = 29; //int num = 0;
+//        //while (num < 30) {
+//
+//            for (int i = 0; i < cityProblemSizeOverwrite.size(); i++) {
+//                for (int j = 0; j < cityProblemSizeOverwrite.get(i); j++) {
+//                    //System.out.println(names[i]);
+//                    if (PCJ.myId() == num) {
+//                        cityGroup = PCJ.join(cityName.get(i));
+//                        thisManyStations = cityProblemSize.get(i);
+//                    }
+//                    num++;
+//                }
+//            }
+//        //}
 
-            for (int i = 0; i < cityProblemSizeOverwrite.size(); i++) {
-                for (int j = 0; j < cityProblemSizeOverwrite.get(i); j++) {
-                    //System.out.println(names[i]);
-                    if (PCJ.myId() == num) {
-                        cityGroup = PCJ.join(cityName.get(i));
-                        thisManyStations = cityProblemSize.get(i);
-                    }
-                    num++;
-                }
-            }
-        //}
+        thisManyStations = 3000;
+        cityGroup = PCJ.join("polska");
+
 
         System.out.println( PCJ.myId() + "  " + cityGroup.myId()  );
         PCJ.barrier();
@@ -506,18 +510,20 @@ public class SmartChargeVNSparallel implements StartPoint {
                         previousValue = fOld;
 
 
-//                        //lsAdditional: printing every 5th solution to file
-//                        if(improveWhileCounter % 10 == 0){
-//                            String fileName = "/Users/Mateusz/Desktop/OUT/temp_" + improveWhileCounter + ".txt";
-//
-//                            PrintWriter paper2 = new PrintWriter(fileName, "UTF-8");
-//                            for (int i = 0; i < searchRangeStopIndex; i++) {
-//                                if(tempLocalSolution[i] == true){
-//                                    paper2.println(LStation.get(i).getX() + ";" + LStation.get(i).getY());
-//                                }
-//                            }
-//                            paper2.close();
-//                        }
+                        //lsAdditional: printing every 5th solution to file
+                        if(cityGroup.myId() == 0) {
+                            if (improveWhileCounter % 3 == 0) {
+                                String fileName = "out/temp_" +cityGroup.getGroupName() + "_" +improveWhileCounter + ".txt";
+
+                                PrintWriter paper2 = new PrintWriter(fileName, "UTF-8");
+                                for (int i = 0; i < searchRangeStopIndex; i++) {
+                                    if (tempLocalSolution[i] == true) {
+                                        paper2.println(LStation.get(i).getX() + ";" + LStation.get(i).getY());
+                                    }
+                                }
+                                paper2.close();
+                            }
+                        }
 
                         //lsAdditional: adding this solution to file
                         if(cityGroup.myId() == 0) {
